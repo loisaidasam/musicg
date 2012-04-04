@@ -16,6 +16,12 @@
 
 package com.musicg.math.statistics;
 
+/**
+ * Evaluate the sum of an array
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class Sum extends MathStatistics{
 
 	public Sum(){		

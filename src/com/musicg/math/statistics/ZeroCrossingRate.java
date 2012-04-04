@@ -16,23 +16,33 @@
 
 package com.musicg.math.statistics;
 
+/**
+ * Evaluate the zero crossing rate of a signal
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class ZeroCrossingRate{
 	
 	private double[] signals;
 	private double lengthInSecond;
 	
-	public ZeroCrossingRate(){
-		lengthInSecond=1;
-	}
-	
-	public ZeroCrossingRate(double[] signals){
-		setSignals(signals,1);
-	}
-	
+	/**
+	 * Constructor
+	 * 
+	 * @param signals	input signal array
+	 * @param lengthInSecond	length of the signal (in second)
+	 */
 	public ZeroCrossingRate(double[] signals, double lengthInSecond){
 		setSignals(signals,1);
 	}
 	
+	/**
+	 * set the signals
+	 * 
+	 * @param signals	input signal array
+	 * @param lengthInSecond	length of the signal (in second)
+	 */
 	public void setSignals(double[] signals, double lengthInSecond){		
 		this.signals=signals;
 		this.lengthInSecond=lengthInSecond;

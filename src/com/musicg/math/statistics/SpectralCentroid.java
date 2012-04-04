@@ -16,6 +16,12 @@
 
 package com.musicg.math.statistics;
 
+/**
+ * Evaluate the spectral centroid of an array
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class SpectralCentroid extends MathStatistics{
 	
 	public SpectralCentroid(){

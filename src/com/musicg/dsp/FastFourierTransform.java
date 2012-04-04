@@ -18,8 +18,20 @@ package com.musicg.dsp;
 
 import com.sun.media.sound.FFT;
 
+/**
+ * FFT object, transform amplitudes to frequency intensities
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class FastFourierTransform {
 
+	/**
+	 * Get the frequency intensities
+	 * 
+	 * @param amplitudes	amplitudes of the signal
+	 * @return	intensities of each frequency unit: mag[frequency_unit]=intensity
+	 */
 	public double[] getMagnitudes(double[] amplitudes) {
 
 		int sampleSize = amplitudes.length;

@@ -16,6 +16,11 @@
 
 package com.musicg.math.statistics;
 
+/**
+ * Evaluate the mean of an array
+ * @author Jacquet Wong
+ *
+ */
 public class Mean extends MathStatistics{
 	
 	private Sum sum=new Sum();

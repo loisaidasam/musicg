@@ -22,6 +22,12 @@ import com.musicg.math.rank.ArrayRankDouble;
 import com.musicg.math.statistics.StandardDeviation;
 import com.musicg.pitch.PitchHandler;
 
+/**
+ * Api for detect whistle
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class WhistleApi {
 	
 	private int sampleRate=44100;

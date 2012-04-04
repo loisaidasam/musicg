@@ -16,6 +16,12 @@
 
 package com.musicg.dsp;
 
+/**
+ * Window functions generator
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class WindowFunction {
 
 	public static final int RECTANGULAR = 0;
@@ -50,6 +56,12 @@ public class WindowFunction {
 		return windowType;
 	}
 
+	/**
+	 * Generate a window
+	 * 
+	 * @param nSamples	size of the window
+	 * @return	window in array
+	 */
 	public double[] generate(int nSamples) {
 		// generate nSamples window function values
 		// for index values 0 .. nSamples - 1

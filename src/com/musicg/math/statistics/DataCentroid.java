@@ -16,6 +16,12 @@
 
 package com.musicg.math.statistics;
 
+/**
+ * Evaluate the centroid of an array
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class DataCentroid extends MathStatistics{
 	
 	public DataCentroid(){

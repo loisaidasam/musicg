@@ -16,6 +16,12 @@
 
 package com.musicg.math.statistics;
 
+/**
+ * Evaluate the standard deviation of an array
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class StandardDeviation extends MathStatistics{
 	
 	private Mean mean=new Mean();
