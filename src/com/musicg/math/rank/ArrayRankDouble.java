@@ -18,6 +18,11 @@ package com.musicg.math.rank;
 
 public class ArrayRankDouble {
 
+	/**
+	 * Get the index position of maximum value the given array 
+	 * @param array
+	 * @return	index of the max value in array
+	 */
 	public int getMaxValueIndex(double[] array) {
 
 		int index = 0;
@@ -33,6 +38,11 @@ public class ArrayRankDouble {
 		return index;
 	}
 
+	/**
+	 * Get the index position of minimum value in the given array 
+	 * @param array
+	 * @return	index of the min value in array
+	 */
 	public int getMinValueIndex(double[] array) {
 
 		int index = 0;
@@ -48,14 +58,21 @@ public class ArrayRankDouble {
 		return index;
 	}
 
-	public double getNthOrderedValue(double[] array, int n, boolean acsending) {
+	/**
+	 * Get the n-th value in the array after sorted
+	 * @param array
+	 * @param n
+	 * @param ascending	is ascending order or not
+	 * @return
+	 */
+	public double getNthOrderedValue(double[] array, int n, boolean ascending) {
 
 		if (n > array.length) {
 			n = array.length;
 		}
 
 		int targetindex;
-		if (acsending) {
+		if (ascending) {
 			targetindex = n;
 		} else {
 			targetindex = array.length - n;

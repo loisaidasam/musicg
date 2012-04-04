@@ -14,34 +14,27 @@
  * limitations under the License.
  */
 
-package com.musicg.experiment.math.cluster;
-public class Segment {
+package com.musicg.math.statistics;
+
+public class Sum extends MathStatistics{
+
+	public Sum(){		
+	}
 	
-	private int startPosition;
-	private int size;
-	private double mean;
-
-	public int getStartPosition() {
-		return startPosition;
+	public Sum(double[] values){		
+		setValues(values);
 	}
-
-	public void setStartPosition(int startPosition) {
-		this.startPosition = startPosition;
+	
+	public double evaluate(){
+		double sum=0;
+		int size=values.length;
+		for (int i=0 ;i<size; i++){
+			sum+=values[i];
+		}
+		return sum;
 	}
-
-	public int getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
-	}
-
-	public double getMean() {
-		return mean;
-	}
-
-	public void setMean(double mean) {
-		this.mean = mean;
+	
+	public int size(){
+		return values.length;
 	}
 }

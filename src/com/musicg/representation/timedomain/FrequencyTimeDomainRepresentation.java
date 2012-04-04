@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package com.musicg.sound.timedomain;
+package com.musicg.representation.timedomain;
+
+import com.musicg.dsp.FastFourierTransform;
+import com.musicg.dsp.WindowFunction;
+import com.musicg.wave.Wave;
 
 /**
  * Handles the wave data in frequency-time domain.
  *
  * @author Jacquet Wong
  */
-
-import com.musicg.dsp.FastFourierTransform;
-import com.musicg.dsp.WindowFunction;
-import com.musicg.sound.Wave;
-
 public class FrequencyTimeDomainRepresentation extends TimeDomainRepresentation{
 	
 	private double[][] spectrogram;	// relative spectrogram
@@ -38,12 +37,26 @@ public class FrequencyTimeDomainRepresentation extends TimeDomainRepresentation{
 	private double unitFrequency;	// frequency per y-axis unit
 	private boolean rebuildSpectrogram;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param wave
+	 */
 	public FrequencyTimeDomainRepresentation(Wave wave) {
 		super(wave);
+
+		// default
 		setFftSampleSize(1024);
-		setOverlapFactor(1);
+		setOverlapFactor(0);	// 0 for no overlapping
 	}
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param wave
+	 * @param fftSampleSize	number of sample in fft, the value needed to be a number to power of 2
+	 * @param overlapFactor	1/overlapFactor overlapping, e.g. 1/4=25% overlapping, 0 for no overlapping
+	 */
 	public FrequencyTimeDomainRepresentation(Wave wave, int fftSampleSize, int overlapFactor) {
 		super(wave);
 		setFftSampleSize(fftSampleSize);
@@ -66,16 +79,29 @@ public class FrequencyTimeDomainRepresentation extends TimeDomainRepresentation{
 		rebuildSpectrogram=true;
 	}
 	
+	/**
+	 * Get spectrogram: spectrogram[time][frequency]=intensity
+	 * 
+	 * @return	logarithm normalized spectrogram
+	 */
 	public double[][] getSpectrogram(){
 		buildSpectrogram();
 		return spectrogram;
 	}
 	
+	/**
+	 * Get spectrogram: spectrogram[time][frequency]=intensity
+	 * 
+	 * @return	absolute spectrogram
+	 */
 	public double[][] getAbsoluteSpectrogram(){
 		buildSpectrogram();
 		return absoluteSpectrogram;
 	}
 	
+	/**
+	 * Build spectrogram
+	 */
 	public void buildSpectrogram(){
 
 		if (rebuildSpectrogram){

@@ -14,34 +14,37 @@
  * limitations under the License.
  */
 
-package com.musicg.experiment.math.cluster;
-public class Segment {
+package com.musicg.math.statistics;
+
+public class StandardDeviation extends MathStatistics{
 	
-	private int startPosition;
-	private int size;
-	private double mean;
-
-	public int getStartPosition() {
-		return startPosition;
+	private Mean mean=new Mean();
+	
+	public StandardDeviation(){
+		
 	}
-
-	public void setStartPosition(int startPosition) {
-		this.startPosition = startPosition;
+	
+	public StandardDeviation(double[] values){
+		setValues(values);
 	}
-
-	public int getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
-	}
-
-	public double getMean() {
-		return mean;
-	}
-
-	public void setMean(double mean) {
-		this.mean = mean;
+	
+	public double evaluate(){
+		
+		mean.setValues(values);
+		double meanValue=mean.evaluate();
+		
+		int size=values.length;
+		double diffSquare=0;
+		double sd=Double.NaN;
+		
+		for (int i=0; i<size; i++){
+			diffSquare+=Math.pow(values[i]-meanValue,2);
+		}
+		
+		if (size>0){
+			sd=Math.sqrt(diffSquare/size);
+		}
+		
+		return sd;
 	}
 }

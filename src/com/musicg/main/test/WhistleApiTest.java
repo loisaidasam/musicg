@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import com.musicg.sound.WaveHeader;
-import com.musicg.sound.WaveInputStream;
-import com.musicg.sound.api.WhistleApi;
+import com.musicg.api.WhistleApi;
+import com.musicg.wave.WaveHeader;
+import com.musicg.wave.WaveInputStream;
 
 public class WhistleApiTest{
 	public static void main(String[] args){		
@@ -31,7 +31,8 @@ public class WhistleApiTest{
 		int fftSampleSize=1024;
 		int fftSignalByteLength=fftSampleSize*wavHeader.getBitsPerSample()/8;				
 		
-		WhistleApi whistleApi=new WhistleApi(wavHeader.getSampleRate(),wavHeader.getBitsPerSample(),wavHeader.getChannels());
+		// whistle api support mono wav only
+		WhistleApi whistleApi=new WhistleApi(wavHeader.getSampleRate(),wavHeader.getBitsPerSample());
 		
 		// read the byte signals
 		try {

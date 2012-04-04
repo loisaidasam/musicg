@@ -14,70 +14,60 @@
  * limitations under the License.
  */
 
-package com.musicg.sound;
-
-/**
- * Read WAVE headers and data from wave input stream
- *
- * @author Jacquet Wong
- */
+package com.musicg.wave;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+ * Read WAVE headers and data from wave input stream
+ * 
+ * @author Jacquet Wong
+ */
 public class Wave {
 
 	private WaveHeader waveHeader;
-		
-	// wave header uses
-	private String chunkId;
-	private long chunkSize; // unsigned 4-bit, little endian
-	private String format;
-	private String subChunk1Id;
-	private long subChunk1Size; // unsigned 4-bit, little endian
-	private int audioFormat; // unsigned 2-bit, little endian
-	private int channels; // unsigned 2-bit, little endian
-	private long sampleRate; // unsigned 4-bit, little endian
-	private long byteRate; // unsigned 4-bit, little endian
-	private int blockAlign; // unsigned 2-bit, little endian
-	private int bitsPerSample; // unsigned 2-bit, little endian
-	private String subChunk2Id;
-	private long subChunk2Size; // unsigned 4-bit, little endian
-	private byte[] data;	// little endian
-	
+	private byte[] data; // little endian
+
+	/**
+	 * Constructor
+	 * 
+	 * @param waveInputStream
+	 *            Wave file input stream
+	 */
 	public Wave(WaveInputStream waveInputStream) {
-		waveHeader=waveInputStream.getWaveHeader();
-		if (waveHeader.isValid()){
-			
-			// set header
-			chunkSize=waveHeader.getChunkSize();
-			subChunk1Size=waveHeader.getSubChunk1Size();
-			audioFormat=waveHeader.getAudioFormat();
-			channels=waveHeader.getChannels();
-			sampleRate=waveHeader.getSampleRate();
-			byteRate=waveHeader.getByteRate();
-			blockAlign=waveHeader.getBlockAlign();
-			bitsPerSample=waveHeader.getBitsPerSample();
-			subChunk2Size=waveHeader.getSubChunk2Size();
-			// end set header
-			
+		waveHeader = waveInputStream.getWaveHeader();
+		if (waveHeader.isValid()) {
 			// load data
 			try {
-				data=new byte[waveInputStream.available()];
+				data = new byte[waveInputStream.available()];
 				waveInputStream.read(data);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			// end load data
-		}
-		else{
+		} else {
 			System.out.println("Invalid Wave Header");
 		}
 	}
 
+	/**
+	 * Trim the wave data
+	 * 
+	 * @param leftTrimSecond
+	 *            Seconds trimmed from beginning
+	 * @param rightTrimSecond
+	 *            Seconds trimmed from ending
+	 */
 	public void trim(float leftTrimSecond, float rightTrimSecond) {
-		
+
+		int sampleRate = waveHeader.getSampleRate();
+		int bitsPerSample = waveHeader.getBitsPerSample();
+		int channels = waveHeader.getChannels();
+		long chunkSize = waveHeader.getChunkSize();
+		long subChunk2Size = waveHeader.getSubChunk2Size();
+
 		long numLeftTrimmed = (int) (sampleRate * bitsPerSample / 8 * channels * leftTrimSecond);
 		long numRightTrimmed = (int) (sampleRate * bitsPerSample / 8 * channels * rightTrimSecond);
 
@@ -90,6 +80,8 @@ public class Wave {
 		// update wav info
 		chunkSize -= totalTrimmed;
 		subChunk2Size -= totalTrimmed;
+		waveHeader.setChunkSize(chunkSize);
+		waveHeader.setSubChunk2Size(subChunk2Size);
 
 		byte[] trimmedData = new byte[(int) subChunk2Size];
 		System.arraycopy(data, (int) numLeftTrimmed, trimmedData, 0,
@@ -97,23 +89,60 @@ public class Wave {
 		data = trimmedData;
 	}
 
+	/**
+	 * Trim the wave data from beginning
+	 * 
+	 * @param second
+	 *            Seconds trimmed from beginning
+	 */
 	public void leftTrim(float second) {
 		trim(second, 0);
 	}
 
+	/**
+	 * Trim the wave data from ending
+	 * 
+	 * @param second
+	 *            Seconds trimmed from ending
+	 */
 	public void rightTrim(float second) {
 		trim(0, second);
 	}
 
+	/**
+	 * Get the wave data in bytes
+	 * 
+	 * @return wave data
+	 */
 	public byte[] getBytes() {
 		return data;
 	}
 
+	/**
+	 * @return wave header
+	 */
 	public String toString() {
 		return waveHeader.toString();
 	}
 
+	/**
+	 * Save the wave file
+	 * 
+	 * @param savePath
+	 *            filepath to be saved
+	 */
 	public void saveAs(String savePath) {
+
+		int byteRate = waveHeader.getByteRate();
+		int audioFormat = waveHeader.getAudioFormat();
+		int sampleRate = waveHeader.getSampleRate();
+		int bitsPerSample = waveHeader.getBitsPerSample();
+		int channels = waveHeader.getChannels();
+		long chunkSize = waveHeader.getChunkSize();
+		long subChunk1Size = waveHeader.getSubChunk1Size();
+		long subChunk2Size = waveHeader.getSubChunk2Size();
+		int blockAlign = waveHeader.getBlockAlign();
+
 		try {
 			FileOutputStream fos = new FileOutputStream(savePath);
 			fos.write(WaveHeader.RIFF_HEADER.getBytes());
@@ -148,29 +177,39 @@ public class Wave {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Length of the wave in second
+	 * 
+	 * @return length in second
+	 */
 	public float length() {
 		return waveHeader.length();
 	}
 
+	/**
+	 * Timestamp of the wave length
+	 * 
+	 * @return timestamp
+	 */
 	public String timestamp() {
 		return waveHeader.timestamp();
 	}
 
 	public int getChannels() {
-		return channels;
+		return waveHeader.getChannels();
 	}
 
 	public int getSampleRate() {
-		return (int)sampleRate;
+		return waveHeader.getSampleRate();
 	}
 
 	public int getByteRate() {
-		return (int)byteRate;
+		return waveHeader.getByteRate();
 	}
 
 	public int getBitsPerSample() {
-		return bitsPerSample;
+		return waveHeader.getBitsPerSample();
 	}
 
 	public boolean isValid() {
@@ -178,39 +217,39 @@ public class Wave {
 	}
 
 	public String getChunkId() {
-		return chunkId;
+		return waveHeader.getChunkId();
 	}
 
 	public long getChunkSize() {
-		return chunkSize;
+		return waveHeader.getChunkSize();
 	}
 
 	public String getFormat() {
-		return format;
+		return waveHeader.getFormat();
 	}
 
 	public String getSubChunk1Id() {
-		return subChunk1Id;
+		return waveHeader.getSubChunk1Id();
 	}
 
 	public long getSubChunk1Size() {
-		return subChunk1Size;
+		return waveHeader.getSubChunk1Size();
 	}
 
 	public int getAudioFormat() {
-		return audioFormat;
+		return waveHeader.getAudioFormat();
 	}
 
 	public int getBlockAlign() {
-		return blockAlign;
+		return waveHeader.getBlockAlign();
 	}
 
 	public String getSubChunk2Id() {
-		return subChunk2Id;
+		return waveHeader.getSubChunk2Id();
 	}
 
 	public long getSubChunk2Size() {
-		return subChunk2Size;
+		return waveHeader.getSubChunk2Size();
 	}
-	
+
 }

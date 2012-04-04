@@ -14,31 +14,58 @@
  * limitations under the License.
  */
 
-package com.musicg.sound.timedomain;
+package com.musicg.representation.timedomain;
+
+import com.musicg.wave.Wave;
 
 /**
  * Handles the wave data in amplitude-time domain.
  *
  * @author Jacquet Wong
  */
-
-import com.musicg.sound.Wave;
-
 public class AmplitudeTimeDomainRepresentation extends TimeDomainRepresentation{
 
 	private double[] normalizedAmplitudes; // normalizedAmplitudes[sampleNumber]=normalizedAmplitudeInTheFrame
 	private float timeStep;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param wave
+	 */
 	public AmplitudeTimeDomainRepresentation(Wave wave) {
 		super(wave);
-		setTimeStep(0.01F);
+			
+		// default setting
+		setTimeStep(0.1F);
 	}
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param wave
+	 * @param timeStep	time interval in second, as known as 1/fps
+	 */
 	public AmplitudeTimeDomainRepresentation(Wave wave, float timeStep) {
 		super(wave);
 		setTimeStep(timeStep);
 	}
 
+	/**
+	 * Get absolute amplitude of each frame
+	 * 
+	 * @return	array of amplitudes (signed 16 bit): amplitudes[frame]=amplitude
+	 */
+	public short[] getAmplitudes() {
+		return amplitudes;
+	}
+	
+	/**
+	 * 
+	 * Get normalized amplitude of each frame
+	 * 
+	 * @return	array of normalized amplitudes(signed 16 bit): normalizedAmplitudes[frame]=amplitude
+	 */
 	public double[] getNormalizedAmplitudes() {
 
 		if (normalizedAmplitudes == null) {

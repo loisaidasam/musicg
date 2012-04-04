@@ -14,34 +14,31 @@
  * limitations under the License.
  */
 
-package com.musicg.experiment.math.cluster;
-public class Segment {
+package com.musicg.math.statistics;
+
+public class DataCentroid extends MathStatistics{
 	
-	private int startPosition;
-	private int size;
-	private double mean;
-
-	public int getStartPosition() {
-		return startPosition;
+	public DataCentroid(){
+		
 	}
-
-	public void setStartPosition(int startPosition) {
-		this.startPosition = startPosition;
+	
+	public DataCentroid(double[] values){
+		setValues(values);
 	}
-
-	public int getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
-	}
-
-	public double getMean() {
-		return mean;
-	}
-
-	public void setMean(double mean) {
-		this.mean = mean;
+		
+	public double evaluate(){
+		double sumCentroid=0;
+		double sumIntensities=0;
+		int size=values.length;
+		
+		for (int i=0; i<size; i++){
+			if (values[i]>0){
+				sumCentroid+=i*values[i];
+				sumIntensities+=values[i];
+			}
+		}
+		double avgCentroid=sumCentroid/sumIntensities;
+		
+		return avgCentroid;
 	}
 }

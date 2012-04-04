@@ -1,4 +1,4 @@
-package com.musicg.sound.graphic;
+package com.musicg.graphic;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -8,8 +8,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import com.musicg.sound.timedomain.AmplitudeTimeDomainRepresentation;
-import com.musicg.sound.timedomain.FrequencyTimeDomainRepresentation;
+import com.musicg.representation.timedomain.AmplitudeTimeDomainRepresentation;
+import com.musicg.representation.timedomain.FrequencyTimeDomainRepresentation;
 
 public class GraphicRender{
 	
@@ -19,6 +19,13 @@ public class GraphicRender{
 	public GraphicRender(){		
 	}
 	
+	/**
+	 * Render a waveform of a wave file
+	 * 
+	 * @param ampRp	amplitude against time representation
+	 * @param filename	output file
+	 * @see	RGB graphic rendered
+	 */
 	public void renderWaveform(AmplitudeTimeDomainRepresentation ampRp, String filename) {
 
 		double[] nAmplitudes = ampRp.getNormalizedAmplitudes();
@@ -92,24 +99,53 @@ public class GraphicRender{
 		// end export image
 	}
 	
+	/**
+	 * Set the vertical marker
+	 * 
+	 * @param x	x-offset pixel of the marker
+	 */
 	public void setVerticalMarker(int x){
 		this.xMarker=x;
 	}
 	
+	/**
+	 * Set the horizontal marker
+	 * 
+	 * @param y	y-offset pixel of the marker
+	 */
 	public void setHorizontalMarker(int y){
 		this.yMarker=y;
 	}
 	
+	/**
+	 * Reset the markers
+	 */
 	public void resetMarkers(){
 		xMarker=-1;
 		yMarker=-1;
 	}
 	
+	/**
+	 * 
+	 * Render a spectrogram of a wave file
+	 * 	 
+	 * @param freqRp	frequency against time representation
+	 * @param filename	output file
+	 * @see	RGB graphic rendered
+	 */
 	public void renderSpectrogram(FrequencyTimeDomainRepresentation freqRp, String filename){
 		freqRp.buildSpectrogram();
 		renderSpectrogram(freqRp.getSpectrogram(),filename);
 	}
 	
+	/**
+	 * 
+	 * Render a spectrogram of a wave file
+	 * 	 
+	 * @param spectrogram	spectrogram[time][frequency]=intensity, which time is the x-axis, frequency is the y-axis, intensity is the color darkness
+	 * @param filename	output file
+	 * @see	RGB graphic rendered
+	 */
 	public void renderSpectrogram(double[][] spectrogram, String filename) {
 		
 		int width=spectrogram.length;

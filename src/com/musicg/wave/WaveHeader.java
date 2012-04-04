@@ -14,41 +14,41 @@
  * limitations under the License.
  */
 
-package com.musicg.sound;
-
-/**
- * Wave header
- *
- * @author Jacquet Wong
- */
+package com.musicg.wave;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * WAV File Specification
+ * https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+ * 
+ * @author Jacquet Wong
+ */
 public class WaveHeader {
 
 	public static final String RIFF_HEADER = "RIFF";
 	public static final String WAVE_HEADER = "WAVE";
 	public static final String FMT_HEADER = "fmt ";
 	public static final String DATA_HEADER = "data";
+	public static final int HEADER_BYTE_LENGTH = 44;	// 44 bytes for header
 
 	private boolean valid;
-
-	private String chunkId;
-	private long chunkSize; // unsigned 4-bit, little endian
-	private String format;
-	private String subChunk1Id;
-	private long subChunk1Size; // unsigned 4-bit, little endian
-	private int audioFormat; // unsigned 2-bit, little endian
-	private int channels; // unsigned 2-bit, little endian
-	private long sampleRate; // unsigned 4-bit, little endian
-	private long byteRate; // unsigned 4-bit, little endian
-	private int blockAlign; // unsigned 2-bit, little endian
-	private int bitsPerSample; // unsigned 2-bit, little endian
-	private String subChunk2Id;
-	private long subChunk2Size; // unsigned 4-bit, little endian
+	private String chunkId;	// 4 bytes
+	private long chunkSize; // unsigned 4 bytes, little endian
+	private String format;	// 4 bytes
+	private String subChunk1Id;	// 4 bytes
+	private long subChunk1Size; // unsigned 4 bytes, little endian
+	private int audioFormat; // unsigned 2 bytes, little endian
+	private int channels; // unsigned 2 bytes, little endian
+	private long sampleRate; // unsigned 4 bytes, little endian
+	private long byteRate; // unsigned 4 bytes, little endian
+	private int blockAlign; // unsigned 2 bytes, little endian
+	private int bitsPerSample; // unsigned 2 bytes, little endian
+	private String subChunk2Id;	// 4 bytes
+	private long subChunk2Size; // unsigned 4 bytes, little endian
 
 	public WaveHeader(String filename) {
 
@@ -68,13 +68,9 @@ public class WaveHeader {
 		valid = loadHeader(inputStream);
 	}
 
-	/*
-	 * WAV File Specification
-	 * https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
-	 */
 	private boolean loadHeader(InputStream inputStream) {
-		
-		byte[] headerBuffer = new byte[44]; // wav header is 44 bytes
+
+		byte[] headerBuffer = new byte[HEADER_BYTE_LENGTH];
 		try {
 			inputStream.read(headerBuffer);
 
@@ -121,8 +117,8 @@ public class WaveHeader {
 
 			// the inputStream should be closed outside this method
 
-			//dis.close();
-			
+			// dis.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -170,11 +166,11 @@ public class WaveHeader {
 	}
 
 	public int getSampleRate() {
-		return (int)sampleRate;
+		return (int) sampleRate;
 	}
 
 	public int getByteRate() {
-		return (int)byteRate;
+		return (int) byteRate;
 	}
 
 	public int getBlockAlign() {
@@ -193,11 +189,21 @@ public class WaveHeader {
 		return subChunk2Size;
 	}
 
+	/**
+	 * Length of the wave in second
+	 * 
+	 * @return length in second
+	 */
 	public float length() {
 		float second = (float) subChunk2Size / byteRate;
 		return second;
 	}
 
+	/**
+	 * Timestamp of the wave length
+	 * 
+	 * @return timestamp
+	 */
 	public String timestamp() {
 		float totalSeconds = this.length();
 		float second = totalSeconds % 60;
@@ -214,6 +220,58 @@ public class WaveHeader {
 		sb.append(second);
 
 		return sb.toString();
+	}
+
+	public void setChunkId(String chunkId) {
+		this.chunkId = chunkId;
+	}
+
+	public void setChunkSize(long chunkSize) {
+		this.chunkSize = chunkSize;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
+	}
+
+	public void setSubChunk1Id(String subChunk1Id) {
+		this.subChunk1Id = subChunk1Id;
+	}
+
+	public void setSubChunk1Size(long subChunk1Size) {
+		this.subChunk1Size = subChunk1Size;
+	}
+
+	public void setAudioFormat(int audioFormat) {
+		this.audioFormat = audioFormat;
+	}
+
+	public void setChannels(int channels) {
+		this.channels = channels;
+	}
+
+	public void setSampleRate(long sampleRate) {
+		this.sampleRate = sampleRate;
+	}
+
+	public void setByteRate(long byteRate) {
+		this.byteRate = byteRate;
+	}
+
+	public void setBlockAlign(int blockAlign) {
+		this.blockAlign = blockAlign;
+	}
+
+	public void setBitsPerSample(int bitsPerSample) {
+		this.bitsPerSample = bitsPerSample;
+	}
+
+	public void setSubChunk2Id(String subChunk2Id) {
+		this.subChunk2Id = subChunk2Id;
+	}
+
+	public void setSubChunk2Size(long subChunk2Size) {
+		this.subChunk2Size = subChunk2Size;
 	}
 
 	public String toString() {

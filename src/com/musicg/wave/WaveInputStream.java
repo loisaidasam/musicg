@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.musicg.sound;
+package com.musicg.wave;
 
 /**
- * Read raw WAVE data from input stream, in fact it just skip the first 44 bytes of WAVE header
+ * Read raw WAVE data from input stream,
+ * actually it just skip the first 44 bytes of WAVE header
  *
  * @author Jacquet Wong
  */

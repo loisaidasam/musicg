@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
+package com.musicg.representation.timedomain;
 
-package com.musicg.sound.timedomain;
+import com.musicg.wave.Wave;
 
-import com.musicg.sound.Wave;
-
+/**
+ * TimeDomainRepresentation for Amplitude-Time domain and Frequency-Time domain
+ * 
+ * @author Jacquet Wong
+ *
+ */
 public class TimeDomainRepresentation{
 	
 	protected Wave wave;
@@ -27,6 +32,11 @@ public class TimeDomainRepresentation{
 	protected int numSamples;
 	protected short[] amplitudes;	// amplitudes[sampleNumber]=amplitudeInTheFrame
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param wave
+	 */
 	public TimeDomainRepresentation(Wave wave){
 		this.wave=wave;
 		audioBytes = wave.getBytes();
@@ -44,11 +54,12 @@ public class TimeDomainRepresentation{
 			amplitudes[i] = amplitude;
 		}
 	}
-	
-	public short[] getAmplitudes() {
-		return amplitudes;
-	}
 
+	/**
+	 * Get the Wave object
+	 * 
+	 * @return Wave object
+	 */
 	public Wave getWave() {
 		return wave;
 	}

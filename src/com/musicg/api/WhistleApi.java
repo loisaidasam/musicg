@@ -1,16 +1,31 @@
-package com.musicg.sound.api;
+/*
+ * Copyright (C) 2011 Jacquet Wong
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.musicg.api;
 
 import com.musicg.dsp.FastFourierTransform;
 import com.musicg.dsp.WindowFunction;
-import com.musicg.math.function.StandardDeviation;
 import com.musicg.math.rank.ArrayRankDouble;
-import com.musicg.sound.pitch.PitchHandler;
+import com.musicg.math.statistics.StandardDeviation;
+import com.musicg.pitch.PitchHandler;
 
 public class WhistleApi {
 	
 	private int sampleRate=44100;
 	private int bitsPerSample=16;
-	private final int channel=1;
 	private int fftSampleSize=1024;
 	private int numFrequencyUnit=fftSampleSize/2;
 	private double unitFrequency=(double)sampleRate/2/numFrequencyUnit;	// frequency could be caught within the half of nSamples according to Nyquist theory
@@ -23,15 +38,23 @@ public class WhistleApi {
 	private int maxNumZeroCross=90;
 	private int numRobust=2;
 	
-	public WhistleApi(int sampleRate, int bitsPerSample, int channel){
+	/**
+	 * Constructor, support mono Wav only
+	 * 
+	 * @param sampleRate	Sample rate of the input audio byte
+	 * @param bitsPerSample	Bit size of a sample of the input audio byte
+	 */
+	public WhistleApi(int sampleRate, int bitsPerSample){
 		this.sampleRate=sampleRate;
 		this.bitsPerSample=bitsPerSample;
-		// support mono wav only
-		if (channel!=1){
-			System.out.println("Support mono channel only.");
-		}
 	}
 	
+	/**
+	 * Determine the audio bytes contains a whistle or not
+	 * 
+	 * @param audioBytes	input audio byte
+	 * @return
+	 */
 	public boolean isWhistle(byte[] audioBytes){
 				
 		int bytesPerSample=bitsPerSample/8;

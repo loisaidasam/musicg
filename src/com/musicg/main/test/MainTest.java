@@ -4,11 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import com.musicg.sound.Wave;
-import com.musicg.sound.WaveInputStream;
-import com.musicg.sound.graphic.GraphicRender;
-import com.musicg.sound.timedomain.AmplitudeTimeDomainRepresentation;
-import com.musicg.sound.timedomain.FrequencyTimeDomainRepresentation;
+import com.musicg.graphic.GraphicRender;
+import com.musicg.representation.timedomain.AmplitudeTimeDomainRepresentation;
+import com.musicg.representation.timedomain.FrequencyTimeDomainRepresentation;
+import com.musicg.wave.Wave;
+import com.musicg.wave.WaveInputStream;
 
 public class MainTest {
 
