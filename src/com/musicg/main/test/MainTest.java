@@ -14,7 +14,7 @@ public class MainTest {
 
 	public static void main(String[] args) {
 
-		String filename = "audio_work/lala.wav";
+		String filename = "audio_work/11k8bitpcm.wav";
 		String outFolder="out";
 
 		// get the wave instance by input stream
@@ -40,12 +40,14 @@ public class MainTest {
 		
 		// get the amplitude
 		double[] amplitudes=ampRp.getNormalizedAmplitudes();
-		
+				
 		// get the spectrogram
 		double[][] spectrogram=freqRp.getSpectrogram();
 		
 		// Graphic render
 		GraphicRender render=new GraphicRender();
+		//render.setHorizontalMarker(1);
+		//render.setVerticalMarker(1);
 		render.renderWaveform(ampRp, outFolder+"/waveform.jpg");
 		render.renderSpectrogram(freqRp, outFolder+"/spectrogram.jpg");
 		

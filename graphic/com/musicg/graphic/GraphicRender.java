@@ -28,6 +28,15 @@ public class GraphicRender{
 	 */
 	public void renderWaveform(AmplitudeTimeDomainRepresentation ampRp, String filename) {
 
+		// for signed signals, the middle is 0 (-1 ~ 1)
+		double middleLine=0;
+		
+		// usually 8bit is unsigned
+		if (ampRp.getWave().getBitsPerSample()==8){
+			// for unsigned signals, the middle is 0.5 (0~1)
+			middleLine=0.5;
+		}
+		
 		double[] nAmplitudes = ampRp.getNormalizedAmplitudes();
 		int width = (int) (nAmplitudes.length / ampRp.getWave().getSampleRate() / ampRp.getTimeStep());
 		int height = 500;
@@ -47,10 +56,10 @@ public class GraphicRender{
 			int startSample=i * numSamplePerTimeFrame;
 			for (int j = 0; j < numSamplePerTimeFrame; j++) {
 				double a = nAmplitudes[startSample + j];
-				if (a > 0) {
-					sumPosAmplitude += a;
+				if (a > middleLine) {
+					sumPosAmplitude += (a-middleLine);
 				} else {
-					sumNegAmplitude += a;
+					sumNegAmplitude += (a-middleLine);
 				}
 			}
 
@@ -76,7 +85,7 @@ public class GraphicRender{
 
 		for (int i = 0; i < width; i++) {
 			for (int j = scaledNegAmplitudes[i]; j < scaledPosAmplitudes[i]; j++) {
-				int y = height - j;
+				int y = height - j;	// j from -ve to +ve, i.e. draw from top to bottom
 				if (y < 0) {
 					y = 0;
 				} else if (y >= height) {
@@ -155,14 +164,14 @@ public class GraphicRender{
 		for (int i=0; i<width; i++){
 			if (i==xMarker){
 				for (int j=0; j<height; j++){
-					bufferedImage.setRGB(i, j, 65280);	// green
+					bufferedImage.setRGB(i, j, 0xFF00);	// green
 				}
 			}
 			else{
 				for (int j=0; j<height; j++){
 					int value;
 					if (j==yMarker){
-						value=16711680;	// red
+						value=0xFF0000;	// red
 					}
 					else{
 						value=255-(int)(spectrogram[i][j]*255);

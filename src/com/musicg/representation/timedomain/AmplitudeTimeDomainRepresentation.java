@@ -70,9 +70,20 @@ public class AmplitudeTimeDomainRepresentation extends TimeDomainRepresentation{
 
 		if (normalizedAmplitudes == null) {
 
+			boolean signed=true;
+			
+			// usually 8bit is unsigned
+			if (wave.getBitsPerSample()==8){
+				signed=false;
+			}
+			
 			int numSamples = amplitudes.length;
 			int maxAmplitude = 1 << (wave.getBitsPerSample() - 1);
-
+			
+			if (!signed){	// one more bit for unsigned value
+				maxAmplitude<<=1;
+			}
+			
 			normalizedAmplitudes = new double[numSamples];
 			for (int i = 0; i < numSamples; i++) {
 				normalizedAmplitudes[i] = (double) amplitudes[i] / maxAmplitude;
