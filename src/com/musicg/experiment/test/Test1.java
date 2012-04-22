@@ -1,66 +1,47 @@
 package com.musicg.experiment.test;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
 import com.musicg.graphic.GraphicRender;
 import com.musicg.math.rank.ArrayRankDouble;
 import com.musicg.math.statistics.SpectralCentroid;
 import com.musicg.math.statistics.StandardDeviation;
-import com.musicg.math.statistics.ZeroCrossingRate;
 import com.musicg.pitch.PitchHandler;
-import com.musicg.representation.timedomain.AmplitudeTimeDomainRepresentation;
-import com.musicg.representation.timedomain.FrequencyTimeDomainRepresentation;
 import com.musicg.wave.Wave;
-import com.musicg.wave.WaveInputStream;
+import com.musicg.wave.extension.Spectrogram;
 
 public class Test1 {
 
 	public static void main(String[] args) {		
 		
-		String filename = "audio_work/sound3.wav";
+		String filename = "audio_work/lala.wav";
 
-		// get the wave instance by input stream
-		InputStream fis = null;
-		try {
-			fis = new FileInputStream(filename);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		// create a wave inputStream by inputStream
-		WaveInputStream wis = new WaveInputStream(fis);
-
-		// create a wave object by wave inputStream
-		Wave wave = new Wave(wis);
+		// create a wave object
+		Wave wave = new Wave(filename);
 
 		// TimeDomainRepresentations
-		FrequencyTimeDomainRepresentation freqRp=new FrequencyTimeDomainRepresentation(wave);
-		AmplitudeTimeDomainRepresentation ampRp=new AmplitudeTimeDomainRepresentation(wave);
-		freqRp.setFftSampleSize(1024);
-		freqRp.setOverlapFactor(1);
+		int fftSampleSize=1024;
+		int overlapFactor=1;
+		Spectrogram spectrogram=new Spectrogram(wave,fftSampleSize,overlapFactor);
 		
-		int fps=freqRp.getFramesPerSecond();
+		int fps=spectrogram.getFramesPerSecond();
+		double unitFrequency=spectrogram.getUnitFrequency();
 
 		// set boundary
 		int highPass=100;
-		int lowerBoundary=(int)(highPass/freqRp.getUnitFrequency());
+		int lowerBoundary=(int)(highPass/unitFrequency);
 		int lowPass=4000;
-		int upperBoundary=(int)(lowPass/freqRp.getUnitFrequency());
+		int upperBoundary=(int)(lowPass/unitFrequency);
 		// end set boundary
 		
-		double[][] spectrogram=freqRp.getSpectrogram();
-		double[][] absoluteSpectrogram=freqRp.getAbsoluteSpectrogram();
-		double[][] boundedspectrogram=new double[spectrogram.length][];
+		double[][] spectrogramData=spectrogram.getSpectrogramData();
+		double[][] absoluteSpectrogramData=spectrogram.getAbsoluteSpectrogramData();
+		double[][] boundedSpectrogramData=new double[spectrogramData.length][];
 		
 		SpectralCentroid sc=new SpectralCentroid();
 		StandardDeviation sd=new StandardDeviation();		
 		ArrayRankDouble arrayRankDouble=new ArrayRankDouble();
-		double unitFrequency=freqRp.getUnitFrequency();
 		
 		// zrc
-		short[] amps=ampRp.getAmplitudes();
+		short[] amps=wave.getSampleAmplitudes();
 		int numFrame=amps.length/1024;
 		double[] zcrs=new double[numFrame];
 		
@@ -82,9 +63,9 @@ public class Test1 {
 		
 		// end zcr
 		
-		for (int i=0; i<spectrogram.length; i++){
+		for (int i=0; i<spectrogramData.length; i++){
 			double[] temp=new double[upperBoundary-lowerBoundary+1];
-			System.arraycopy(spectrogram[i], lowerBoundary, temp, 0, temp.length);			
+			System.arraycopy(spectrogramData[i], lowerBoundary, temp, 0, temp.length);			
 			
 			int maxIndex=arrayRankDouble.getMaxValueIndex(temp);			
 			//sc.setValues(temp);
@@ -92,18 +73,18 @@ public class Test1 {
 			double sdValue=sd.evaluate();
 			
 			System.out.println(i+" "+(double)i/fps+"s\t"+maxIndex+"\t"+sdValue+"\t"+zcrs[i]);
-			boundedspectrogram[i]=temp;
+			boundedSpectrogramData[i]=temp;
 		}
 		
 		// Graphic render		
 		GraphicRender render=new GraphicRender();
 		render.setHorizontalMarker(61);
 		render.setVerticalMarker(200);
-		render.renderSpectrogram(boundedspectrogram, filename+".jpg");
+		render.renderSpectrogramData(boundedSpectrogramData, filename+".jpg");
 		
 		PitchHandler ph=new PitchHandler();
 
-		for (int frame=0; frame<absoluteSpectrogram.length; frame++){
+		for (int frame=0; frame<absoluteSpectrogramData.length; frame++){
 			
 			System.out.print("frame "+frame+": ");
 						
@@ -113,7 +94,7 @@ public class Test1 {
 			double passSd=0.1;
 			
 			if (sdValue<passSd){
-				System.arraycopy(spectrogram[frame], lowerBoundary, temp, 0, temp.length);
+				System.arraycopy(spectrogramData[frame], lowerBoundary, temp, 0, temp.length);
 				double maxFrequency=arrayRankDouble.getMaxValueIndex(temp)*unitFrequency;
 				
 				double passFrequency=400;
@@ -123,7 +104,7 @@ public class Test1 {
 				double nthValue=arrayRankDouble.getNthOrderedValue(temp, numRobust, false);
 				int count=0;
 				for (int b=lowerBoundary; b<=upperBoundary; b++){
-					if (spectrogram[frame][b]>=nthValue){
+					if (spectrogramData[frame][b]>=nthValue){
 						robustFrequencies[count++]=b*unitFrequency;
 						if (count>=numRobust){
 							break;
@@ -133,10 +114,10 @@ public class Test1 {
 				
 				double passIntensity=1000;
 				double intensity=0;
-				for (int i=0; i<absoluteSpectrogram[frame].length; i++){
-					intensity+=absoluteSpectrogram[frame][i];
+				for (int i=0; i<absoluteSpectrogramData[frame].length; i++){
+					intensity+=absoluteSpectrogramData[frame][i];
 				}
-				intensity/=absoluteSpectrogram[frame].length;
+				intensity/=absoluteSpectrogramData[frame].length;
 				System.out.print(" intensity: "+intensity+" pitch: "+maxFrequency);
 				if (intensity>passIntensity && maxFrequency>passFrequency){				
 					double p=ph.getHarmonicProbability(robustFrequencies);				

@@ -16,11 +16,13 @@
 
 package com.musicg.api;
 
-import com.musicg.dsp.FastFourierTransform;
-import com.musicg.dsp.WindowFunction;
 import com.musicg.math.rank.ArrayRankDouble;
 import com.musicg.math.statistics.StandardDeviation;
+import com.musicg.math.statistics.ZeroCrossingRate;
 import com.musicg.pitch.PitchHandler;
+import com.musicg.wave.Wave;
+import com.musicg.wave.WaveHeader;
+import com.musicg.wave.extension.Spectrogram;
 
 /**
  * Api for detect whistle
@@ -30,29 +32,44 @@ import com.musicg.pitch.PitchHandler;
  */
 public class WhistleApi {
 	
-	private int sampleRate=44100;
-	private int bitsPerSample=16;
-	private int fftSampleSize=1024;
-	private int numFrequencyUnit=fftSampleSize/2;
-	private double unitFrequency=(double)sampleRate/2/numFrequencyUnit;	// frequency could be caught within the half of nSamples according to Nyquist theory
-	private double passFrequency=400;
-	private double passIntensity=100;
-	private double passStandardDeviation=0.2;
-	private int highPass=400;		
-	private int lowPass=4000;
-	private int minNumZeroCross=60;
-	private int maxNumZeroCross=90;
-	private int numRobust=2;
-	
+	private WaveHeader waveHeader;
+	private int fftSampleSize;
+	private int numFrequencyUnit;
+	private double unitFrequency;
+	private double passFrequency;
+	private double passIntensity;
+	private double passStandardDeviation;
+	private int highPass;		
+	private int lowPass;
+	private int minNumZeroCross;
+	private int maxNumZeroCross;
+	private int numRobust;
+		
 	/**
 	 * Constructor, support mono Wav only
 	 * 
 	 * @param sampleRate	Sample rate of the input audio byte
 	 * @param bitsPerSample	Bit size of a sample of the input audio byte
 	 */
-	public WhistleApi(int sampleRate, int bitsPerSample){
-		this.sampleRate=sampleRate;
-		this.bitsPerSample=bitsPerSample;
+	public WhistleApi(WaveHeader waveHeader){
+		if (waveHeader.getChannels()==1){
+			this.waveHeader=waveHeader;
+			fftSampleSize=1024;	// higher resolution
+			//fftSampleSize=512;	// lower resolution
+			numFrequencyUnit=fftSampleSize/2;
+			unitFrequency=(double)waveHeader.getSampleRate()/2/numFrequencyUnit;	// frequency could be caught within the half of nSamples according to Nyquist theory
+			passFrequency=400;
+			passIntensity=100;
+			passStandardDeviation=0.2;
+			highPass=400;		
+			lowPass=4000;
+			minNumZeroCross=60;
+			maxNumZeroCross=90;
+			numRobust=2;
+		}
+		else{
+			System.err.println("Whistle API supports mono Wav only");
+		}
 	}
 	
 	/**
@@ -63,18 +80,24 @@ public class WhistleApi {
 	 */
 	public boolean isWhistle(byte[] audioBytes){
 				
-		int bytesPerSample=bitsPerSample/8;
+		int bytesPerSample=waveHeader.getBitsPerSample()/8;
 		int numSamples = audioBytes.length / bytesPerSample;
 		
-		if (Integer.bitCount(numSamples)==1){
-			this.fftSampleSize=numSamples;
-
-			// amplitudes of the clip
-			short[] amplitudes=getAmplitudes(audioBytes,bitsPerSample);
+		// numSamples required to be a power of 2
+		if (numSamples>0 && Integer.bitCount(numSamples)==1){
+			fftSampleSize=numSamples;
 			
-			// spectrum for the clip
-			double[] spectrum=getSpectrum(amplitudes);
+			Wave wave=new Wave(waveHeader,audioBytes);
+			
+			// amplitudes of the clip
+			short[] amplitudes=wave.getSampleAmplitudes();
 
+			// spectrum for the clip
+			Spectrogram spectrogram=wave.getSpectrogram(fftSampleSize, 0);
+			double[][] spectrogramData=spectrogram.getAbsoluteSpectrogramData();
+
+			// since fftSampleSize==numSamples, there're only one spectrum which is spectrogramData[0]
+			double[] spectrum=spectrogramData[0];
 			// get the average intensity of the signal
 			double intensity=0;
 			for (int i=0; i<spectrum.length; i++){
@@ -82,7 +105,7 @@ public class WhistleApi {
 			}
 			intensity/=spectrum.length;
 			// end get the average intensity of the signal
-			
+
 			// normalize the spectrum
 			normalizeSpectrum(spectrum);
 			
@@ -90,119 +113,75 @@ public class WhistleApi {
 			int lowerBoundary=(int)(highPass/unitFrequency);
 			int upperBoundary=(int)(lowPass/unitFrequency);
 			// end set boundary
-			
+
 			// copy the significant range of the spectrum to a temp spectrum
-			double[] temp=new double[upperBoundary-lowerBoundary+1];
-			System.arraycopy(spectrum, lowerBoundary, temp, 0, temp.length);
+			int frequencyUnitRange=upperBoundary-lowerBoundary+1;
 			
-			StandardDeviation standardDeviation=new StandardDeviation();
-			standardDeviation.setValues(temp);			
+			if (frequencyUnitRange<=spectrum.length){
 			
-			double sd=standardDeviation.evaluate();
-			
-			// rule 1: clear whistle has a range of standard deviation 
-			if (sd<passStandardDeviation){
-			
-				// find the robust frequency
-				ArrayRankDouble arrayRankDouble=new ArrayRankDouble();
-				double maxFrequency=arrayRankDouble.getMaxValueIndex(temp)*unitFrequency;
+				double[] temp=new double[frequencyUnitRange];			
+				System.arraycopy(spectrum, lowerBoundary, temp, 0, temp.length);
 				
-				// find top most robust frequencies
-				double[] robustFrequencies=new double[numRobust];
-				double nthValue=arrayRankDouble.getNthOrderedValue(temp, numRobust, false);
-				int count=0;
-				for (int b=lowerBoundary; b<=upperBoundary; b++){
-					if (spectrum[b]>=nthValue){
-						robustFrequencies[count++]=b*unitFrequency;
-						if (count>=numRobust){
-							break;
+				StandardDeviation standardDeviation=new StandardDeviation();
+				standardDeviation.setValues(temp);			
+	
+				double sd=standardDeviation.evaluate();
+				
+				// rule 1: clear whistle has a range of standard deviation 
+				if (sd<passStandardDeviation){
+				
+					// find the robust frequency
+					ArrayRankDouble arrayRankDouble=new ArrayRankDouble();
+					double maxFrequency=arrayRankDouble.getMaxValueIndex(temp)*unitFrequency;
+					
+					// find top most robust frequencies
+					double[] robustFrequencies=new double[numRobust];
+					double nthValue=arrayRankDouble.getNthOrderedValue(temp, numRobust, false);
+					int count=0;
+					for (int b=lowerBoundary; b<=upperBoundary; b++){
+						if (spectrum[b]>=nthValue){
+							robustFrequencies[count++]=b*unitFrequency;
+							if (count>=numRobust){
+								break;
+							}
 						}
 					}
-				}
-				// end find top most robust frequencies
-				
-				
-				PitchHandler pitchHandler=new PitchHandler();
-				
-				// rule2: frequency of the whistle should not be too low and soft
-				if (maxFrequency>=passFrequency && intensity>passIntensity){
+					// end find top most robust frequencies
+	
+					PitchHandler pitchHandler=new PitchHandler();
 					
-					double probability=pitchHandler.getHarmonicProbability(robustFrequencies);
-					//System.out.println(maxFrequency+" "+intensity+" "+probability);
-					
-					// rule3: whistle doesn't have obvious harmonics
-					if (probability<0.5){
+					// rule2: frequency of the whistle should not be too low and soft
+					if (maxFrequency>=passFrequency && intensity>passIntensity){
 						
-						// rule4: whistle has a range of zero crossing value
-						int zc=getNumZeroCrosses(amplitudes);
-						if (zc>=minNumZeroCross && zc<=maxNumZeroCross){
-							return true;
+						double probability=pitchHandler.getHarmonicProbability(robustFrequencies);
+						//System.out.println(maxFrequency+" "+intensity+" "+probability);
+						
+						// rule3: whistle doesn't have obvious harmonics
+						if (probability<0.5){
+							
+							// rule4: whistle has a range of zero crossing value
+							// when lengthInSecond=1, zero crossing rate is the num of zero crosses
+							ZeroCrossingRate zcr=new ZeroCrossingRate(amplitudes,1);
+							int numZeroCrosses=(int)zcr.evaluate();
+							if (numZeroCrosses>=minNumZeroCross && numZeroCrosses<=maxNumZeroCross){
+								return true;
+							}
 						}
 					}
 				}
+			}
+			else{
+				System.err.println("isWhistle error: the wave needed to be higher sample rate");
 			}
 			
 		}
 		else{
-			System.out.print("The sample size must be a power of 2");
+			System.out.println("The sample size must be a power of 2");
 		}
 		
 		return false;		
 	}
-	
-	private short[] getAmplitudes(byte[] audioBytes, int bitsPerSample) {
-
-		int bytesPerSample=bitsPerSample/8;
-		int numSamples = audioBytes.length / bytesPerSample;
-		short[] amplitudes = new short[numSamples];
-
-		int pointer = 0;
-		for (int i = 0; i < numSamples; i++) {
-			short amplitude = 0;
-			for (int byteNumber = 0; byteNumber < bytesPerSample; byteNumber++) {
-				// little endian
-				amplitude |= (short) ((audioBytes[pointer++] & 0xFF) << (byteNumber * 8));
-			}
-			amplitudes[i] = amplitude;
-		}
-
-		return amplitudes;
-	}
-	
-	private double[] getSpectrum(short[] amplitudes){
 		
-		int sampleSize=amplitudes.length;
-		WindowFunction window = new WindowFunction();
-		window.setWindowType("Hamming");
-		double[] win=window.generate(sampleSize);
-		
-		// signals for fft input
-		double[] signals=new double[sampleSize];		
-		for (int i=0; i<sampleSize; i++){
-			signals[i]=amplitudes[i]*win[i];							
-		}
-		
-		FastFourierTransform fft = new FastFourierTransform();
-		double[] spectrum=new double[sampleSize];
-		spectrum=fft.getMagnitudes(signals);
-		
-		return spectrum;
-	}
-	
-	private int getNumZeroCrosses(short[] amplitudes){
-		
-		int numZC=0;
-		int size=amplitudes.length;
-		
-		for (int i=0; i<size-1; i++){
-			if((amplitudes[i]>=0 && amplitudes[i+1]<0) || (amplitudes[i]<0 && amplitudes[i+1]>=0)){
-				numZC++;
-			}
-		}	
-		
-		return numZC;
-	}
-	
 	private void normalizeSpectrum(double[] spectrum){
 
 		// normalization of absoultSpectrogram

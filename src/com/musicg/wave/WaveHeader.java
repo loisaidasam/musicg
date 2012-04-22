@@ -16,8 +16,6 @@
 
 package com.musicg.wave;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -50,19 +48,19 @@ public class WaveHeader {
 	private String subChunk2Id;	// 4 bytes
 	private long subChunk2Size; // unsigned 4 bytes, little endian
 
-	public WaveHeader(String filename) {
-
-		try {
-			InputStream inputStream = new FileInputStream(filename);
-			valid = loadHeader(inputStream);
-			inputStream.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
+	public WaveHeader(){
+		// init a 8k 16bit mono wav		
+		chunkSize=36;
+		subChunk1Size=16;
+		audioFormat=1;
+		channels=1;
+		sampleRate=8000;
+		byteRate=16000;
+		blockAlign=2;
+		bitsPerSample=16;
+		subChunk2Size=0;
+		valid=true;
+	}	
 
 	public WaveHeader(InputStream inputStream) {
 		valid = loadHeader(inputStream);
@@ -189,39 +187,6 @@ public class WaveHeader {
 		return subChunk2Size;
 	}
 
-	/**
-	 * Length of the wave in second
-	 * 
-	 * @return length in second
-	 */
-	public float length() {
-		float second = (float) subChunk2Size / byteRate;
-		return second;
-	}
-
-	/**
-	 * Timestamp of the wave length
-	 * 
-	 * @return timestamp
-	 */
-	public String timestamp() {
-		float totalSeconds = this.length();
-		float second = totalSeconds % 60;
-		int minute = (int) totalSeconds / 60 % 60;
-		int hour = (int) (totalSeconds / 3600);
-
-		StringBuffer sb = new StringBuffer();
-		if (hour > 0) {
-			sb.append(hour + ":");
-		}
-		if (minute > 0) {
-			sb.append(minute + ":");
-		}
-		sb.append(second);
-
-		return sb.toString();
-	}
-
 	public void setChunkId(String chunkId) {
 		this.chunkId = chunkId;
 	}
@@ -301,9 +266,7 @@ public class WaveHeader {
 		sb.append("\n");
 		sb.append("subChunk2Id: " + subChunk2Id);
 		sb.append("\n");
-		sb.append("subChunk2Size: " + subChunk2Size);
-		sb.append("\n");
-		sb.append("length: " + timestamp());
+		sb.append("subChunk2Size: " + subChunk2Size);		
 		return sb.toString();
 	}
 }

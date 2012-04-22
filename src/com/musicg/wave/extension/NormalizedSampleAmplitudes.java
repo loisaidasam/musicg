@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.musicg.representation.timedomain;
+package com.musicg.wave.extension;
 
 import com.musicg.wave.Wave;
 
@@ -23,41 +23,13 @@ import com.musicg.wave.Wave;
  *
  * @author Jacquet Wong
  */
-public class AmplitudeTimeDomainRepresentation extends TimeDomainRepresentation{
+public class NormalizedSampleAmplitudes{
 
+	private Wave wave;
 	private double[] normalizedAmplitudes; // normalizedAmplitudes[sampleNumber]=normalizedAmplitudeInTheFrame
-	private float timeStep;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param wave
-	 */
-	public AmplitudeTimeDomainRepresentation(Wave wave) {
-		super(wave);
-			
-		// default setting
-		setTimeStep(0.1F);
-	}
-	
-	/**
-	 * Constructor
-	 * 
-	 * @param wave
-	 * @param timeStep	time interval in second, as known as 1/fps
-	 */
-	public AmplitudeTimeDomainRepresentation(Wave wave, float timeStep) {
-		super(wave);
-		setTimeStep(timeStep);
-	}
-
-	/**
-	 * Get absolute amplitude of each frame
-	 * 
-	 * @return	array of amplitudes (signed 16 bit): amplitudes[frame]=amplitude
-	 */
-	public short[] getAmplitudes() {
-		return amplitudes;
+	public NormalizedSampleAmplitudes(Wave wave){
+		this.wave=wave;
 	}
 	
 	/**
@@ -73,12 +45,13 @@ public class AmplitudeTimeDomainRepresentation extends TimeDomainRepresentation{
 			boolean signed=true;
 			
 			// usually 8bit is unsigned
-			if (wave.getBitsPerSample()==8){
+			if (wave.getWaveHeader().getBitsPerSample()==8){
 				signed=false;
 			}
 			
+			short[] amplitudes=wave.getSampleAmplitudes();
 			int numSamples = amplitudes.length;
-			int maxAmplitude = 1 << (wave.getBitsPerSample() - 1);
+			int maxAmplitude = 1 << (wave.getWaveHeader().getBitsPerSample() - 1);
 			
 			if (!signed){	// one more bit for unsigned value
 				maxAmplitude<<=1;
@@ -89,15 +62,6 @@ public class AmplitudeTimeDomainRepresentation extends TimeDomainRepresentation{
 				normalizedAmplitudes[i] = (double) amplitudes[i] / maxAmplitude;
 			}
 		}
-
 		return normalizedAmplitudes;
-	}
-
-	public float getTimeStep() {
-		return timeStep;
-	}
-
-	public void setTimeStep(float timeStep) {
-		this.timeStep = timeStep;
 	}
 }

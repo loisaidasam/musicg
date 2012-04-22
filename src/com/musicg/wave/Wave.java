@@ -16,40 +16,146 @@
 
 package com.musicg.wave;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+
+import com.musicg.wave.extension.NormalizedSampleAmplitudes;
+import com.musicg.wave.extension.Spectrogram;
 
 /**
  * Read WAVE headers and data from wave input stream
  * 
  * @author Jacquet Wong
  */
-public class Wave {
+public class Wave implements Serializable{
 
+	private static final long serialVersionUID = 1L;
 	private WaveHeader waveHeader;
-	private byte[] data; // little endian
+	private byte[] data;	// little endian
 
 	/**
 	 * Constructor
 	 * 
-	 * @param waveInputStream
+	 */
+	public Wave() {
+		this.waveHeader=new WaveHeader();
+		this.data=new byte[0];
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param filename
+	 *            Wave file
+	 */
+	public Wave(String filename) {
+		try {
+			InputStream inputStream = new FileInputStream(filename);
+			initWaveWithInputStream(inputStream);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param inputStream
 	 *            Wave file input stream
 	 */
-	public Wave(WaveInputStream waveInputStream) {
-		waveHeader = waveInputStream.getWaveHeader();
+	public Wave(InputStream inputStream) {
+		initWaveWithInputStream(inputStream);
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param WaveHeader
+	 *            waveHeader
+	 * @param byte[]
+	 *            data
+	 */
+	public Wave(WaveHeader waveHeader, byte[] data) {
+		this.waveHeader = waveHeader;
+		this.data = data;
+	}
+	
+	private void initWaveWithInputStream(InputStream inputStream) {
+		// reads the first 44 bytes for header
+		waveHeader = new WaveHeader(inputStream);
+
 		if (waveHeader.isValid()) {
 			// load data
 			try {
-				data = new byte[waveInputStream.available()];
-				waveInputStream.read(data);
+				data = new byte[inputStream.available()];
+				inputStream.read(data);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			// end load data
 		} else {
-			System.out.println("Invalid Wave Header");
+			System.err.println("Invalid Wave Header");
 		}
+	}
+
+	/**
+	 * Trim the wave data
+	 * 
+	 * @param leftTrimNumberOfSample
+	 *            Number of sample trimmed from beginning
+	 * @param rightTrimNumberOfSample
+	 *            Number of sample trimmed from ending
+	 */
+	public void trim(int leftTrimNumberOfSample, int rightTrimNumberOfSample) {
+
+		long chunkSize = waveHeader.getChunkSize();
+		long subChunk2Size = waveHeader.getSubChunk2Size();
+
+		long totalTrimmed = leftTrimNumberOfSample + rightTrimNumberOfSample;
+
+		if (totalTrimmed > subChunk2Size) {
+			leftTrimNumberOfSample = (int) subChunk2Size;
+		}
+
+		// update wav info
+		chunkSize -= totalTrimmed;
+		subChunk2Size -= totalTrimmed;
+		
+		if (chunkSize>=0 && subChunk2Size>=0){
+			waveHeader.setChunkSize(chunkSize);
+			waveHeader.setSubChunk2Size(subChunk2Size);
+	
+			byte[] trimmedData = new byte[(int) subChunk2Size];
+			System.arraycopy(data, (int) leftTrimNumberOfSample, trimmedData, 0,
+					(int) subChunk2Size);
+			data = trimmedData;
+		}
+		else{
+			System.err.println("Trim error: Negative length");
+		}
+	}
+
+	/**
+	 * Trim the wave data from beginning
+	 * 
+	 * @param numberOfSample
+	 *            numberOfSample trimmed from beginning
+	 */
+	public void leftTrim(int numberOfSample) {
+		trim(numberOfSample, 0);
+	}
+
+	/**
+	 * Trim the wave data from ending
+	 * 
+	 * @param numberOfSample
+	 *            numberOfSample trimmed from ending
+	 */
+	public void rightTrim(int numberOfSample) {
+		trim(0, numberOfSample);
 	}
 
 	/**
@@ -60,33 +166,18 @@ public class Wave {
 	 * @param rightTrimSecond
 	 *            Seconds trimmed from ending
 	 */
-	public void trim(float leftTrimSecond, float rightTrimSecond) {
+	public void trim(double leftTrimSecond, double rightTrimSecond) {
 
 		int sampleRate = waveHeader.getSampleRate();
 		int bitsPerSample = waveHeader.getBitsPerSample();
 		int channels = waveHeader.getChannels();
-		long chunkSize = waveHeader.getChunkSize();
-		long subChunk2Size = waveHeader.getSubChunk2Size();
 
-		long numLeftTrimmed = (int) (sampleRate * bitsPerSample / 8 * channels * leftTrimSecond);
-		long numRightTrimmed = (int) (sampleRate * bitsPerSample / 8 * channels * rightTrimSecond);
+		int leftTrimNumberOfSample = (int) (sampleRate * bitsPerSample / 8
+				* channels * leftTrimSecond);
+		int rightTrimNumberOfSample = (int) (sampleRate * bitsPerSample / 8
+				* channels * rightTrimSecond);
 
-		long totalTrimmed = numLeftTrimmed + numRightTrimmed;
-
-		if (totalTrimmed > subChunk2Size) {
-			numLeftTrimmed = subChunk2Size;
-		}
-
-		// update wav info
-		chunkSize -= totalTrimmed;
-		subChunk2Size -= totalTrimmed;
-		waveHeader.setChunkSize(chunkSize);
-		waveHeader.setSubChunk2Size(subChunk2Size);
-
-		byte[] trimmedData = new byte[(int) subChunk2Size];
-		System.arraycopy(data, (int) numLeftTrimmed, trimmedData, 0,
-				(int) subChunk2Size);
-		data = trimmedData;
+		trim(leftTrimNumberOfSample, rightTrimNumberOfSample);
 	}
 
 	/**
@@ -95,7 +186,7 @@ public class Wave {
 	 * @param second
 	 *            Seconds trimmed from beginning
 	 */
-	public void leftTrim(float second) {
+	public void leftTrim(double second) {
 		trim(second, 0);
 	}
 
@@ -105,10 +196,40 @@ public class Wave {
 	 * @param second
 	 *            Seconds trimmed from ending
 	 */
-	public void rightTrim(float second) {
+	public void rightTrim(double second) {
 		trim(0, second);
 	}
 
+	/**
+	 * Get the wave header
+	 * 
+	 * @return waveHeader
+	 */
+	public WaveHeader getWaveHeader() {
+		return waveHeader;
+	}
+	
+	/**
+	 * Get the wave spectrogram
+	 * 
+	 * @return spectrogram
+	 */
+	public Spectrogram getSpectrogram(){
+		return new Spectrogram(this);
+	}
+	
+	/**
+	 * Get the wave spectrogram
+	 * 
+	 * @param fftSampleSize	number of sample in fft, the value needed to be a number to power of 2
+	 * @param overlapFactor	1/overlapFactor overlapping, e.g. 1/4=25% overlapping, 0 for no overlapping
+	 * 
+	 * @return spectrogram
+	 */
+	public Spectrogram getSpectrogram(int fftSampleSize, int overlapFactor) {
+		return new Spectrogram(this,fftSampleSize,overlapFactor);
+	}
+	
 	/**
 	 * Get the wave data in bytes
 	 * 
@@ -119,72 +240,22 @@ public class Wave {
 	}
 
 	/**
-	 * @return wave header
-	 */
-	public String toString() {
-		return waveHeader.toString();
-	}
-
-	/**
-	 * Save the wave file
+	 * Data byte size of the wave excluding header size
 	 * 
-	 * @param savePath
-	 *            filepath to be saved
+	 * @return byte size of the wave
 	 */
-	public void saveAs(String savePath) {
-
-		int byteRate = waveHeader.getByteRate();
-		int audioFormat = waveHeader.getAudioFormat();
-		int sampleRate = waveHeader.getSampleRate();
-		int bitsPerSample = waveHeader.getBitsPerSample();
-		int channels = waveHeader.getChannels();
-		long chunkSize = waveHeader.getChunkSize();
-		long subChunk1Size = waveHeader.getSubChunk1Size();
-		long subChunk2Size = waveHeader.getSubChunk2Size();
-		int blockAlign = waveHeader.getBlockAlign();
-
-		try {
-			FileOutputStream fos = new FileOutputStream(savePath);
-			fos.write(WaveHeader.RIFF_HEADER.getBytes());
-			// little endian
-			fos.write(new byte[] { (byte) (chunkSize), (byte) (chunkSize >> 8),
-					(byte) (chunkSize >> 16), (byte) (chunkSize >> 24) });
-			fos.write(WaveHeader.WAVE_HEADER.getBytes());
-			fos.write(WaveHeader.FMT_HEADER.getBytes());
-			fos.write(new byte[] { (byte) (subChunk1Size),
-					(byte) (subChunk1Size >> 8), (byte) (subChunk1Size >> 16),
-					(byte) (subChunk1Size >> 24) });
-			fos.write(new byte[] { (byte) (audioFormat),
-					(byte) (audioFormat >> 8) });
-			fos.write(new byte[] { (byte) (channels), (byte) (channels >> 8) });
-			fos.write(new byte[] { (byte) (sampleRate),
-					(byte) (sampleRate >> 8), (byte) (sampleRate >> 16),
-					(byte) (sampleRate >> 24) });
-			fos.write(new byte[] { (byte) (byteRate), (byte) (byteRate >> 8),
-					(byte) (byteRate >> 16), (byte) (byteRate >> 24) });
-			fos.write(new byte[] { (byte) (blockAlign),
-					(byte) (blockAlign >> 8) });
-			fos.write(new byte[] { (byte) (bitsPerSample),
-					(byte) (bitsPerSample >> 8) });
-			fos.write(WaveHeader.DATA_HEADER.getBytes());
-			fos.write(new byte[] { (byte) (subChunk2Size),
-					(byte) (subChunk2Size >> 8), (byte) (subChunk2Size >> 16),
-					(byte) (subChunk2Size >> 24) });
-			fos.write(this.getBytes());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public int size() {
+		return data.length;
 	}
-
+	
 	/**
 	 * Length of the wave in second
 	 * 
 	 * @return length in second
 	 */
 	public float length() {
-		return waveHeader.length();
+		float second = (float) waveHeader.getSubChunk2Size() / waveHeader.getByteRate();
+		return second;
 	}
 
 	/**
@@ -193,63 +264,55 @@ public class Wave {
 	 * @return timestamp
 	 */
 	public String timestamp() {
-		return waveHeader.timestamp();
+		float totalSeconds = this.length();
+		float second = totalSeconds % 60;
+		int minute = (int) totalSeconds / 60 % 60;
+		int hour = (int) (totalSeconds / 3600);
+
+		StringBuffer sb = new StringBuffer();
+		if (hour > 0) {
+			sb.append(hour + ":");
+		}
+		if (minute > 0) {
+			sb.append(minute + ":");
+		}
+		sb.append(second);
+
+		return sb.toString();
 	}
 
-	public int getChannels() {
-		return waveHeader.getChannels();
+	/**
+	 * Get the amplitudes of the wave samples (depends on the header)
+	 * 
+	 * @return amplitudes array (signed 16-bit)
+	 */
+	public short[] getSampleAmplitudes(){
+		int bytePerSample = waveHeader.getBitsPerSample() / 8;
+		int numSamples = data.length / bytePerSample;
+		short[] amplitudes = new short[numSamples];
+		
+		int pointer = 0;
+		for (int i = 0; i < numSamples; i++) {
+			short amplitude = 0;
+			for (int byteNumber = 0; byteNumber < bytePerSample; byteNumber++) {
+				// little endian
+				amplitude |= (short) ((data[pointer++] & 0xFF) << (byteNumber * 8));
+			}
+			amplitudes[i] = amplitude;
+		}
+		
+		return amplitudes;
+	}
+	
+	public String toString(){
+		StringBuffer sb=new StringBuffer(waveHeader.toString());
+		sb.append("\n");
+		sb.append("length: " + timestamp());
+		return sb.toString();
 	}
 
-	public int getSampleRate() {
-		return waveHeader.getSampleRate();
+	public double[] getNormalizedAmplitudes() {
+		NormalizedSampleAmplitudes amplitudes=new NormalizedSampleAmplitudes(this);
+		return amplitudes.getNormalizedAmplitudes();
 	}
-
-	public int getByteRate() {
-		return waveHeader.getByteRate();
-	}
-
-	public int getBitsPerSample() {
-		return waveHeader.getBitsPerSample();
-	}
-
-	public boolean isValid() {
-		return waveHeader.isValid();
-	}
-
-	public String getChunkId() {
-		return waveHeader.getChunkId();
-	}
-
-	public long getChunkSize() {
-		return waveHeader.getChunkSize();
-	}
-
-	public String getFormat() {
-		return waveHeader.getFormat();
-	}
-
-	public String getSubChunk1Id() {
-		return waveHeader.getSubChunk1Id();
-	}
-
-	public long getSubChunk1Size() {
-		return waveHeader.getSubChunk1Size();
-	}
-
-	public int getAudioFormat() {
-		return waveHeader.getAudioFormat();
-	}
-
-	public int getBlockAlign() {
-		return waveHeader.getBlockAlign();
-	}
-
-	public String getSubChunk2Id() {
-		return waveHeader.getSubChunk2Id();
-	}
-
-	public long getSubChunk2Size() {
-		return waveHeader.getSubChunk2Size();
-	}
-
 }
