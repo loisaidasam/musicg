@@ -122,10 +122,18 @@ public class WaveHeader {
 			return false;
 		}
 
+		if (bitsPerSample!=8 && bitsPerSample!=16){
+			System.err.println("WaveHeader: only supports bitsPerSample 8 or 16");			
+			return false;
+		}
+		
 		// check the format is support
 		if (chunkId.toUpperCase().equals(RIFF_HEADER)
 				&& format.toUpperCase().equals(WAVE_HEADER) && audioFormat == 1) {
 			return true;
+		}
+		else{
+			System.err.println("WaveHeader: Unsupported header format");	
 		}
 
 		return false;
@@ -187,6 +195,23 @@ public class WaveHeader {
 		return subChunk2Size;
 	}
 
+	public void updateSampleRate(int sampleRate){
+		
+		int newSubChunk2Size = (int)(this.subChunk2Size * sampleRate / this.sampleRate);
+		
+		// if num bytes for each sample is even, the size of newSubChunk2Size also needed to be in even number
+		if ((bitsPerSample/8)%2==0){			
+			if (newSubChunk2Size%2!=0){
+				newSubChunk2Size++;
+			}
+		}
+		
+		this.setSampleRate(sampleRate);
+		this.setByteRate(sampleRate*bitsPerSample/8);
+		this.setChunkSize(newSubChunk2Size+36);
+		this.setSubChunk2Size(newSubChunk2Size);
+	}
+	
 	public void setChunkId(String chunkId) {
 		this.chunkId = chunkId;
 	}

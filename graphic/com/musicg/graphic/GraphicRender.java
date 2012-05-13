@@ -135,7 +135,7 @@ public class GraphicRender{
 	 * @see	RGB graphic rendered
 	 */
 	public void renderSpectrogram(Spectrogram spectrogram,String filename){
-		renderSpectrogramData(spectrogram.getSpectrogramData(),filename);
+		renderSpectrogramData(spectrogram.getNormalizedSpectrogramData(),filename);
 	}
 	
 	/**

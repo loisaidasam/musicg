@@ -10,7 +10,7 @@ public class MainTest {
 
 	public static void main(String[] args) {
 
-		String filename = "audio_work/jac_whistle2.wav";
+		String filename = "out/jac_whistle2_44100.wav";
 		String outFolder="out";
 
 		// create a wave object
@@ -33,7 +33,7 @@ public class MainTest {
 		//render.setHorizontalMarker(1);
 		//render.setVerticalMarker(1);
 		render.renderWaveform(wave, outFolder+"/waveform.jpg");
-		render.renderSpectrogram(spectrogram, outFolder+"/spectrogram.jpg");
+		render.renderSpectrogram(spectrogram, outFolder+"/spectrogram_a.jpg");
 		
 		// change the amplitude representation
 		float timeStep=0.1F;
@@ -43,7 +43,7 @@ public class MainTest {
 		int fftSampleSize=512;
 		int overlapFactor=2;
 		spectrogram=new Spectrogram(wave,fftSampleSize,overlapFactor);
-		render.renderSpectrogram(spectrogram,outFolder+"/spectrogram2.jpg");
+		render.renderSpectrogram(spectrogram,outFolder+"/spectrogram2_a.jpg");
 		
 		// trim the wav
 		wave.leftTrim(1);

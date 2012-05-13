@@ -32,7 +32,7 @@ public class Test1 {
 		int upperBoundary=(int)(lowPass/unitFrequency);
 		// end set boundary
 		
-		double[][] spectrogramData=spectrogram.getSpectrogramData();
+		double[][] spectrogramData=spectrogram.getNormalizedSpectrogramData();
 		double[][] absoluteSpectrogramData=spectrogram.getAbsoluteSpectrogramData();
 		double[][] boundedSpectrogramData=new double[spectrogramData.length][];
 		

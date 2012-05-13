@@ -179,7 +179,7 @@ public class Spectrogram{
 	 * 
 	 * @return	logarithm normalized spectrogram
 	 */
-	public double[][] getSpectrogramData(){
+	public double[][] getNormalizedSpectrogramData(){
 		return spectrogram;
 	}
 	

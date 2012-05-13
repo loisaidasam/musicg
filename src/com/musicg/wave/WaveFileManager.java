@@ -83,6 +83,7 @@ public class WaveFileManager{
 					(byte) (subChunk2Size >> 8), (byte) (subChunk2Size >> 16),
 					(byte) (subChunk2Size >> 24) });
 			fos.write(wave.getBytes());
+			fos.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

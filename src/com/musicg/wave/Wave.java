@@ -21,7 +21,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
+import com.musicg.fingerprint.FingerprintManager;
+import com.musicg.fingerprint.PairManager;
 import com.musicg.wave.extension.NormalizedSampleAmplitudes;
 import com.musicg.wave.extension.Spectrogram;
 
@@ -35,6 +40,7 @@ public class Wave implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private WaveHeader waveHeader;
 	private byte[] data;	// little endian
+	private byte[] fingerprint;
 
 	/**
 	 * Constructor
@@ -55,7 +61,10 @@ public class Wave implements Serializable{
 		try {
 			InputStream inputStream = new FileInputStream(filename);
 			initWaveWithInputStream(inputStream);
+			inputStream.close();
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -314,5 +323,40 @@ public class Wave implements Serializable{
 	public double[] getNormalizedAmplitudes() {
 		NormalizedSampleAmplitudes amplitudes=new NormalizedSampleAmplitudes(this);
 		return amplitudes.getNormalizedAmplitudes();
+	}
+	
+	public byte[] getFingerprint(){		
+		if (fingerprint==null){
+			FingerprintManager fingerprintManager=new FingerprintManager();
+			fingerprint=fingerprintManager.extractFingerprint(this);
+		}
+		return fingerprint;
+	}
+	
+	public double fingerprintSimilarity(Wave wave){
+		
+		byte[] compareWaveFingerprint=wave.getFingerprint();
+		int numMatch=0;
+		
+		// get the pairs
+		PairManager pairManager=new PairManager();
+		HashMap<Integer,List<Integer>> this_Pair_PositionList_Table=pairManager.getPair_PositionList_Table(fingerprint);
+		HashMap<Integer,List<Integer>> compareWave_Pair_PositionList_Table=pairManager.getPair_PositionList_Table(compareWaveFingerprint);
+		
+		Iterator<Integer> compareWaveHashNumberIterator=compareWave_Pair_PositionList_Table.keySet().iterator();
+		while (compareWaveHashNumberIterator.hasNext()){
+			int compareWaveHashNumber=compareWaveHashNumberIterator.next();
+			
+			// for each compare hash number, get the positions
+			List<Integer> compareWavePositionList=compareWave_Pair_PositionList_Table.get(compareWaveHashNumber);
+			Iterator<Integer> compareWavePositionListIterator=compareWavePositionList.iterator();
+			while (compareWavePositionListIterator.hasNext()){
+				int compareWavePosition=compareWavePositionListIterator.next();
+				System.out.print(" "+compareWavePosition);
+			}
+			System.out.println();
+		}
+		
+		return 1;
 	}
 }
