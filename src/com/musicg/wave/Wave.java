@@ -21,12 +21,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 import com.musicg.fingerprint.FingerprintManager;
-import com.musicg.fingerprint.PairManager;
+import com.musicg.fingerprint.FingerprintSimilarity;
+import com.musicg.fingerprint.FingerprintSimilarityComputer;
 import com.musicg.wave.extension.NormalizedSampleAmplitudes;
 import com.musicg.wave.extension.Spectrogram;
 
@@ -333,30 +331,8 @@ public class Wave implements Serializable{
 		return fingerprint;
 	}
 	
-	public double fingerprintSimilarity(Wave wave){
-		
-		byte[] compareWaveFingerprint=wave.getFingerprint();
-		int numMatch=0;
-		
-		// get the pairs
-		PairManager pairManager=new PairManager();
-		HashMap<Integer,List<Integer>> this_Pair_PositionList_Table=pairManager.getPair_PositionList_Table(fingerprint);
-		HashMap<Integer,List<Integer>> compareWave_Pair_PositionList_Table=pairManager.getPair_PositionList_Table(compareWaveFingerprint);
-		
-		Iterator<Integer> compareWaveHashNumberIterator=compareWave_Pair_PositionList_Table.keySet().iterator();
-		while (compareWaveHashNumberIterator.hasNext()){
-			int compareWaveHashNumber=compareWaveHashNumberIterator.next();
-			
-			// for each compare hash number, get the positions
-			List<Integer> compareWavePositionList=compareWave_Pair_PositionList_Table.get(compareWaveHashNumber);
-			Iterator<Integer> compareWavePositionListIterator=compareWavePositionList.iterator();
-			while (compareWavePositionListIterator.hasNext()){
-				int compareWavePosition=compareWavePositionListIterator.next();
-				System.out.print(" "+compareWavePosition);
-			}
-			System.out.println();
-		}
-		
-		return 1;
+	public FingerprintSimilarity getFingerprintSimilarity(Wave wave){		
+		FingerprintSimilarityComputer fingerprintSimilarityComputer=new FingerprintSimilarityComputer(this.getFingerprint(),wave.getFingerprint());
+		return fingerprintSimilarityComputer.getFingerprintsSimilarity();
 	}
 }

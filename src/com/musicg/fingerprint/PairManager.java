@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Jacquet Wong
+ * Copyright (C) 2012 Jacquet Wong
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,7 +152,6 @@ public class PairManager{
 					continue;	// same filter bank should have equal value
 				}
 				// end check filter bank zone
-				
 				
 				int pairHashcode=(x2-x1)*numFrequencyUnits*numFrequencyUnits+y2*numFrequencyUnits+y1;	
 				

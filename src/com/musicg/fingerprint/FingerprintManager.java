@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Jacquet Wong
+ * Copyright (C) 2012 Jacquet Wong
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.musicg.fingerprint;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -133,7 +134,7 @@ public class FingerprintManager{
 		return fingerprint;
 	}
 
-	public byte[] loadFingerprint(String fingerprintFile){
+	public byte[] loadFingerprintFromFile(String fingerprintFile){
 		
 		byte[] fingerprint=null;
 		
@@ -158,6 +159,20 @@ public class FingerprintManager{
 		}
 		
 		return fingerprint;
+	}
+	
+	public void saveFingerprintAsFile(byte[] fingerprint, String filename){
+
+        FileOutputStream fileOutputStream;
+		try {
+			fileOutputStream = new FileOutputStream(filename);
+			fileOutputStream.write(fingerprint);
+			fileOutputStream.close();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	// robustLists[x]=y1,y2,y3,...
@@ -222,7 +237,14 @@ public class FingerprintManager{
 	}
 
 	public static int getNumFrames(byte[] fingerprint){
+		
+		if (fingerprint.length<8){
+			return 0;
+		}
+		
 		// get the last x-coordinate (length-8&length-7)bytes from fingerprint
+		// last 8 byte of thisFingerprint is the last frame of this wave
+		// first 2 byte of the last 8 byte is the x position of this wave, i.e. (number_of_frames-1) of this wave
 		int numFrames=((int)(fingerprint[fingerprint.length-8]&0xff)<<8 | (int)(fingerprint[fingerprint.length-7]&0xff))+1;
 		return numFrames;
 	}
