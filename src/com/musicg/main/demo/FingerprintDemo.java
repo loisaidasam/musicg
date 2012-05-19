@@ -35,7 +35,7 @@ public class FingerprintDemo{
 		fingerprintManager.saveFingerprintAsFile(fingerprint, "out/"+filename+".fingerprint");
 		
 		// load fingerprint from file
-		byte[] loadedFp=fingerprintManager.loadFingerprintFromFile("out/"+filename+".fingerprint");
+		byte[] loadedFp=fingerprintManager.getFingerprintFromFile("out/"+filename+".fingerprint");
 		
 		/*
 		// fingerprint bytes checking

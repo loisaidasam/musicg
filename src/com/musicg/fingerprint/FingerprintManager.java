@@ -16,13 +16,11 @@
 
 package com.musicg.fingerprint;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,7 +33,7 @@ import com.musicg.wave.WaveHeader;
 import com.musicg.wave.extension.Spectrogram;
 
 /**
- * Audio fingerprint manager
+ * Audio fingerprint manager, handle fingerprint operations
  * 
  * @author jacquet
  *
@@ -48,10 +46,19 @@ public class FingerprintManager{
 	private int numRobustPointsPerFrame=fingerprintProperties.getNumRobustPointsPerFrame();
 	private int numFilterBanks=fingerprintProperties.getNumFilterBanks();
 	
+	/**
+	 * Constructor
+	 */
 	public FingerprintManager(){
 		
 	}
-	
+
+	/**
+	 * Extract fingerprint from Wave object
+	 * 
+	 * @param wave	Wave Object to be extracted fingerprint
+	 * @return fingerprint in bytes
+	 */
 	public byte[] extractFingerprint(Wave wave){
 
 		int[][] coordinates;	// coordinates[x][0..3]=y0..y3
@@ -134,33 +141,50 @@ public class FingerprintManager{
 		return fingerprint;
 	}
 
-	public byte[] loadFingerprintFromFile(String fingerprintFile){
-		
+	/**
+	 * Get bytes from fingerprint file
+	 * 
+	 * @param fingerprintFile	fingerprint filename
+	 * @return fingerprint in bytes
+	 */
+	public byte[] getFingerprintFromFile(String fingerprintFile){
 		byte[] fingerprint=null;
-		
 		try {
-			FileInputStream fis=new FileInputStream(fingerprintFile);
-			FileChannel fc=fis.getChannel();
-			int size=(int)new File(fingerprintFile).length();
-			ByteBuffer buffer=ByteBuffer.allocateDirect(size);
-			fc.read(buffer);
-						
-			fingerprint=new byte[size];
-			buffer.rewind();
-			buffer.get(fingerprint);			
-			
-			fc.close();
+			InputStream fis=new FileInputStream(fingerprintFile);
+			fingerprint=getFingerprintFromInputStream(fis);
 			fis.close();
-			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 		return fingerprint;
 	}
 	
+	/**
+	 * Get bytes from fingerprint inputstream
+	 * 
+	 * @param fingerprintFile	fingerprint inputstream
+	 * @return fingerprint in bytes
+	 */
+	public byte[] getFingerprintFromInputStream(InputStream inputStream){		
+		byte[] fingerprint=null;
+		try {
+			fingerprint = new byte[inputStream.available()];
+			inputStream.read(fingerprint);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return fingerprint;
+	}
+	
+	/**
+	 * Save fingerprint to a file
+	 * 
+	 * @param fingerprint	fingerprint bytes
+	 * @param filename		fingerprint filename
+	 * @see	fingerprint file saved
+	 */
 	public void saveFingerprintAsFile(byte[] fingerprint, String filename){
 
         FileOutputStream fileOutputStream;
@@ -236,6 +260,16 @@ public class FingerprintManager{
 		return robustLists;
 	}
 
+	/**
+	 * Number of frames in a fingerprint
+	 * Each frame lengths 8 bytes
+	 * Usually there is more than one point in each frame, so it cannot simply divide the bytes length by 8
+	 * Last 8 byte of thisFingerprint is the last frame of this wave
+	 * First 2 byte of the last 8 byte is the x position of this wave, i.e. (number_of_frames-1) of this wave	 
+	 * 
+	 * @param fingerprint	fingerprint bytes
+	 * @return number of frames of the fingerprint
+	 */
 	public static int getNumFrames(byte[] fingerprint){
 		
 		if (fingerprint.length<8){
@@ -243,8 +277,6 @@ public class FingerprintManager{
 		}
 		
 		// get the last x-coordinate (length-8&length-7)bytes from fingerprint
-		// last 8 byte of thisFingerprint is the last frame of this wave
-		// first 2 byte of the last 8 byte is the x position of this wave, i.e. (number_of_frames-1) of this wave
 		int numFrames=((int)(fingerprint[fingerprint.length-8]&0xff)<<8 | (int)(fingerprint[fingerprint.length-7]&0xff))+1;
 		return numFrames;
 	}

@@ -22,11 +22,23 @@ import java.util.List;
 import com.musicg.math.rank.MapRank;
 import com.musicg.math.rank.MapRankInteger;
 
+/**
+ * Compute the similarity of two fingerprints
+ * 
+ * @author jacquet
+ *
+ */
 public class FingerprintSimilarityComputer{
 	
 	private FingerprintSimilarity fingerprintSimilarity;
 	byte[] fingerprint1, fingerprint2;
 	
+	/**
+	 * Constructor, ready to compute the similarity of two fingerprints
+	 * 
+	 * @param fingerprint1
+	 * @param fingerprint2
+	 */
 	public FingerprintSimilarityComputer(byte[] fingerprint1, byte[] fingerprint2){
 		
 		this.fingerprint1=fingerprint1;
@@ -35,6 +47,11 @@ public class FingerprintSimilarityComputer{
 		fingerprintSimilarity=new FingerprintSimilarity();
 	}
 
+	/**
+	 * Get fingerprint similarity of inout fingerprints
+	 * 
+	 * @return fingerprint similarity object
+	 */
 	public FingerprintSimilarity getFingerprintsSimilarity(){
 		HashMap<Integer,Integer> offset_Score_Table=new HashMap<Integer,Integer>();	// offset_Score_Table<offset,count>
 		int numFrames=0;

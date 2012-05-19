@@ -25,7 +25,7 @@ import com.musicg.math.quicksort.QuickSortIndexPreserved;
 import com.musicg.properties.FingerprintProperties;
 
 /**
- * Make pairs for the audio fingerprints
+ * Make pairs for the audio fingerprints, which a pair is used to group the same features together
  * 
  * @author jacquet
  *
@@ -44,11 +44,19 @@ public class PairManager{
 	private boolean isReferencePairing;
 	private HashMap<Integer,Boolean> stopPairTable=new HashMap<Integer,Boolean>();
 	
+	/**
+	 * Constructor
+	 */
 	public PairManager(){
 		maxPairs=fingerprintProperties.getRefMaxActivePairs();
 		isReferencePairing=true;
 	}
 	
+	/**
+	 * Constructor, number of pairs of robust points depends on the parameter isReferencePairing
+	 * no. of pairs of reference and sample can be different due to environmental influence of source  
+	 * @param isReferencePairing
+	 */
 	public PairManager(boolean isReferencePairing){
 		if (isReferencePairing){
 			maxPairs=fingerprintProperties.getRefMaxActivePairs();
@@ -59,6 +67,14 @@ public class PairManager{
 		this.isReferencePairing=isReferencePairing;
 	}
 	
+	/**
+	 * Get a pair-positionList table
+	 * It's a hash map which the key is the hashed pair, and the value is list of positions
+	 * That means the table stores the positions which have the same hashed pair
+	 * 
+	 * @param fingerprint	fingerprint bytes
+	 * @return pair-positionList HashMap
+	 */
 	public HashMap<Integer,List<Integer>> getPair_PositionList_Table(byte[] fingerprint){
 		
 		List<int[]> pairPositionList=getPairPositionList(fingerprint);
@@ -202,10 +218,22 @@ public class PairManager{
 		return sortedCoordinateList;
 	}
 
+	/**
+	 * Convert hashed pair to bytes
+	 * 
+	 * @param pairHashcode hashed pair
+	 * @return byte array
+	 */
 	public static byte[] pairHashcodeToBytes(int pairHashcode){	
 		return new byte[]{(byte)(pairHashcode>>8),(byte)pairHashcode};
 	}
 	
+	/**
+	 * Convert bytes to hased pair
+	 * 
+	 * @param pairBytes
+	 * @return hashed pair
+	 */
 	public static int pairBytesToHashcode(byte[] pairBytes){	
 		return (int)(pairBytes[0]&0xFF)<<8|(int)(pairBytes[1]&0xFF);
 	}
