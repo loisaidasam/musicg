@@ -7,7 +7,7 @@ import com.musicg.wave.extension.Spectrogram;
 public class RenderSpectrogramDemo {
 	public static void main(String[] args) {
 
-		String filename = "cock_a_1.wav";
+		String filename = "audio_work/cock_a_1.wav";
 		String outFolder = "out";
 
 		// create a wave object

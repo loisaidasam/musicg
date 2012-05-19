@@ -6,7 +6,7 @@ import com.musicg.wave.Wave;
 public class RenderWaveformDemo {
 	public static void main(String[] args) {
 
-		String filename = "cock_a_1.wav";
+		String filename = "audio_work/cock_a_1.wav";
 		String outFolder = "out";
 
 		// create a wave object
