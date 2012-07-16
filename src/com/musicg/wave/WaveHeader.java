@@ -195,10 +195,8 @@ public class WaveHeader {
 		return subChunk2Size;
 	}
 
-	public void updateSampleRate(int sampleRate){
-		
+	public void setSampleRate(int sampleRate){
 		int newSubChunk2Size = (int)(this.subChunk2Size * sampleRate / this.sampleRate);
-		
 		// if num bytes for each sample is even, the size of newSubChunk2Size also needed to be in even number
 		if ((bitsPerSample/8)%2==0){			
 			if (newSubChunk2Size%2!=0){
@@ -206,10 +204,10 @@ public class WaveHeader {
 			}
 		}
 		
-		this.setSampleRate(sampleRate);
-		this.setByteRate(sampleRate*bitsPerSample/8);
-		this.setChunkSize(newSubChunk2Size+36);
-		this.setSubChunk2Size(newSubChunk2Size);
+		this.sampleRate = sampleRate;
+		this.byteRate = sampleRate*bitsPerSample/8;
+		this.chunkSize = newSubChunk2Size+36;
+		this.subChunk2Size = newSubChunk2Size;
 	}
 	
 	public void setChunkId(String chunkId) {
@@ -238,10 +236,6 @@ public class WaveHeader {
 
 	public void setChannels(int channels) {
 		this.channels = channels;
-	}
-
-	public void setSampleRate(long sampleRate) {
-		this.sampleRate = sampleRate;
 	}
 
 	public void setByteRate(long byteRate) {

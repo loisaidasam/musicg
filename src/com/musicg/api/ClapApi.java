@@ -19,38 +19,39 @@ package com.musicg.api;
 import com.musicg.wave.WaveHeader;
 
 /**
- * Api for detecting whistle
+ * Api for detecting clap
  * 
  * @author Jacquet Wong
  * 
  */
-public class WhistleApi extends DetectionApi{
+public class ClapApi extends DetectionApi{
 	
-	public WhistleApi(WaveHeader waveHeader) {
+	public ClapApi(WaveHeader waveHeader) {
 		super(waveHeader);
 	}
 
 	protected void init(){
-		// settings for detecting a whistle
-		minFrequency = 600.0f;
+		// settings for detecting a clap
+		minFrequency = 1000.0f;
 		maxFrequency = Double.MAX_VALUE;
 		
-		minIntensity = 100.0f;
+		// get the decay part of a clap
+		minIntensity = 10000.0f;
 		maxIntensity = 100000.0f;
 		
-		minStandardDeviation = 0.1f;
-		maxStandardDeviation = 1.0f;
+		minStandardDeviation = 0.0f;
+		maxStandardDeviation = 0.05f;
 		
 		highPass = 100;
 		lowPass = 10000;
 		
-		minNumZeroCross = 50;
-		maxNumZeroCross = 200;
+		minNumZeroCross = 100;
+		maxNumZeroCross = 500;
 		
-		numRobust = 10;
+		numRobust = 4;
 	}
 		
-	public boolean isWhistle(byte[] audioBytes){
+	public boolean isClap(byte[] audioBytes){
 		return isSpecificSound(audioBytes);
 	}
 }

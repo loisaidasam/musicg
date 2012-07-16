@@ -73,7 +73,7 @@ public class FingerprintManager{
 		
         // update the wave header
         WaveHeader resampledWaveHeader=wave.getWaveHeader();
-        resampledWaveHeader.updateSampleRate(targetRate);
+        resampledWaveHeader.setSampleRate(targetRate);
         
         // make resampled wave
         Wave resampledWave=new Wave(resampledWaveHeader,resampledWaveData);
