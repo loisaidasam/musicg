@@ -184,6 +184,15 @@ public class Wave implements Serializable{
 		int rightTrimNumberOfSample = (int) (sampleRate * bitsPerSample / 8
 				* channels * rightTrimSecond);
 
+        // Samples number must be divisible by (bitsPerSample / 8)
+        int residualLeft = leftTrimNumberOfSample % (bitsPerSample / 8);
+        if (residualLeft != 0)
+            leftTrimNumberOfSample -= residualLeft;
+
+        int residualRight = rightTrimNumberOfSample % (bitsPerSample / 8);
+        if (residualRight != 0)
+            rightTrimNumberOfSample -= residualRight;
+
 		trim(leftTrimNumberOfSample, rightTrimNumberOfSample);
 	}
 
