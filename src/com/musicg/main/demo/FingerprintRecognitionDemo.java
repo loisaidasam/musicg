@@ -17,12 +17,14 @@ package com.musicg.main.demo;
 
 import com.musicg.fingerprint.FingerprintSimilarity;
 import com.musicg.wave.Wave;
+import com.musicg.wave.WaveFileManager;
 
 public class FingerprintRecognitionDemo {
 
 	public static void main(String[] args) {
 
-		String songA = "audio_work/songs/canon_d_major.wav";
+		String songA = "audio_work/songs/recordedaudio-old1.wav";
+//		String songA = "audio_work/songs/vmanswernopin.wav";
 		String songB = "audio_work/songs/fing_fing_ha.wav";
 		String songC = "audio_work/songs/forrest_gump_theme.wav";
 		String songD = "audio_work/songs/imagine.wav";
@@ -35,13 +37,27 @@ public class FingerprintRecognitionDemo {
 		Wave waveD = new Wave(songD);
 		Wave waveE = new Wave(songE);
 
-		String recordedClip = "audio_work/songs/top_of_the_world_rec.wav";
+		String recordedClip = "audio_work/songs/vmanswernopin-old1.wav";
+//		String recordedClip = "audio_work/songs/recordedaudio.wav";
 		Wave waveRec = new Wave(recordedClip);
 
 		FingerprintSimilarity similarity;
-		
-		// song A:
+
 		similarity = waveA.getFingerprintSimilarity(waveRec);
+
+		System.out.println(waveRec.getWaveHeader());
+//		System.out.println(waveA.length());
+//		System.out.println(similarity.getsetMostSimilarTimePosition());
+//		waveA.trim(similarity.getsetMostSimilarTimePosition(), waveRec.length());
+//		WaveFileManager waveFileManager=new WaveFileManager(waveA);
+//		waveFileManager.saveWaveAsFile("audio_work/out.wav");
+//		Wave newWave = new Wave("audio_work/out.wav");
+////		waveA.trim(waveRec.length(), similarity.getMostSimilarFramePosition());
+//		// song A:
+//		System.out.println(waveA.length());
+		similarity = waveA.getFingerprintSimilarity(waveRec);
+//		similarity = newWave.getFingerprintSimilarity(waveRec);
+
 		System.out.println("clip is found at "
 				+ similarity.getsetMostSimilarTimePosition() + "s in "
 				+ songA+" with similarity " + similarity.getSimilarity());

@@ -67,7 +67,8 @@ public class Spectrogram{
 			this.fftSampleSize=fftSampleSize;
 		}
 		else{
-			System.err.print("The input number must be a power of 2");
+			// Commenting out error, especially since we don't really care about the Spectogram in our tests
+//			System.err.print("The input number must be a power of 2");
 			this.fftSampleSize=SPECTROGRAM_DEFAULT_FFT_SAMPLE_SIZE;
 		}
 
