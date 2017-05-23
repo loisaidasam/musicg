@@ -21,13 +21,16 @@ public class FingerprintProperties{
 	protected static FingerprintProperties instance=null;
 
 	private int numRobustPointsPerFrame=4;	// number of points in each frame, i.e. top 4 intensities in fingerprint
-	private int sampleSizePerFrame=2048;	// number of audio samples in a frame, it is suggested to be the FFT Size
+	// Changed the sampleSizePerFrame to 1600 to make the sampleRate 8000 for our testing framework
+	// Since all of our audio is recorded at 8000 sampleRate
+	private int sampleSizePerFrame=1600;	// number of audio samples in a frame, it is suggested to be the FFT Size
+//		private int sampleSizePerFrame=2048;	// number of audio samples in a frame, it is suggested to be the FFT Size
 	private int overlapFactor=4;	// 8 means each move 1/8 nSample length. 1 means no overlap, better 1,2,4,8 ...	32
 	private int numFilterBanks=4;
 	
 	private int upperBoundedFrequency=1500;	// low pass
 	private int lowerBoundedFrequency=400;	// high pass
-	private int fps=5;	// in order to have 5fps with 2048 sampleSizePerFrame, wave's sample rate need to be 10240 (sampleSizePerFrame*fps)
+	private int fps=5;	// in order to have 5fps with 1600 sampleSizePerFrame, wave's sample rate need to be 8000 (sampleSizePerFrame*fps)
 	private int sampleRate=sampleSizePerFrame*fps;	// the audio's sample rate needed to resample to this in order to fit the sampleSizePerFrame and fps
 	private int numFramesInOneSecond=overlapFactor*fps;	// since the overlap factor affects the actual number of fps, so this value is used to evaluate how many frames in one second eventually  
 	
