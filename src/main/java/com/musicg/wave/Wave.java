@@ -212,7 +212,7 @@ public class Wave implements Serializable{
 	 * @param second
 	 *            Seconds trimmed from ending
 	 */
-	public void  rightTrim(double second) {
+	public void rightTrim(double second) {
 		trim(0, second);
 	}
 
