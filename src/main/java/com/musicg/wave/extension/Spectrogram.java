@@ -67,7 +67,8 @@ public class Spectrogram{
 			this.fftSampleSize=fftSampleSize;
 		}
 		else{
-			System.err.print("The input number must be a power of 2");
+			// Commenting out since we are messing with the fingerprint properties and we don't care about the spectogram
+//			System.err.print("The input number must be a power of 2");
 			this.fftSampleSize=SPECTROGRAM_DEFAULT_FFT_SAMPLE_SIZE;
 		}
 

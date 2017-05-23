@@ -22,7 +22,9 @@ public class FingerprintRecognitionDemo {
 
 	public static void main(String[] args) {
 
-		String songA = "audio_work/songs/canon_d_major.wav";
+		String songA = "audio_work/songs/recordedAudio-30410.wav";
+//		String songA = "audio_work/songs/recordedAudio-31528.wav";
+//		String songA = "audio_work/songs/vmanswernopin.wav";
 		String songB = "audio_work/songs/fing_fing_ha.wav";
 		String songC = "audio_work/songs/forrest_gump_theme.wav";
 		String songD = "audio_work/songs/imagine.wav";
@@ -35,13 +37,21 @@ public class FingerprintRecognitionDemo {
 		Wave waveD = new Wave(songD);
 		Wave waveE = new Wave(songE);
 
-		String recordedClip = "audio_work/songs/top_of_the_world_rec.wav";
+//		String recordedClip = "audio_work/songs/vmAnswerNoPin.wav";
+//		String recordedClip = "audio_work/songs/youHaveNoNewMessages.wav";
+		String recordedClip = "audio_work/songs/cut.wav";
+//		String recordedClip = "audio_work/songs/noNew-cut.wav";
+//		String recordedClip = "audio_work/songs/recordedaudio.wav";
 		Wave waveRec = new Wave(recordedClip);
 
-		FingerprintSimilarity similarity;
-		
+		FingerprintSimilarity similarity = waveRec.getFingerprintSimilarity(waveA);
+//		FingerprintSimilarity similarity = waveA.getFingerprintSimilarity(waveRec);
+
+		System.out.println(waveRec.getWaveHeader());
+		System.out.println();
+		System.out.println(waveA.getWaveHeader());
+
 		// song A:
-		similarity = waveA.getFingerprintSimilarity(waveRec);
 		System.out.println("clip is found at "
 				+ similarity.getsetMostSimilarTimePosition() + "s in "
 				+ songA+" with similarity " + similarity.getSimilarity());
