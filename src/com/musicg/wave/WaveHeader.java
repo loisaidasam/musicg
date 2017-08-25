@@ -81,7 +81,7 @@ public class WaveHeader {
 			chunkSize = (long) (headerBuffer[pointer++] & 0xff)
 					| (long) (headerBuffer[pointer++] & 0xff) << 8
 					| (long) (headerBuffer[pointer++] & 0xff) << 16
-					| (long) (headerBuffer[pointer++] & 0xff << 24);
+					| (long) (headerBuffer[pointer++] & 0xff) << 24;
 			format = new String(new byte[] { headerBuffer[pointer++],
 					headerBuffer[pointer++], headerBuffer[pointer++],
 					headerBuffer[pointer++] });
